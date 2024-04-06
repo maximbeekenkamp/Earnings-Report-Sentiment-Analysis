@@ -1,0 +1,2 @@
+To save space in the repo the data isn't included, but you can download it from the README.
+If you want to run the code, you'll need to download the data and put it in the `Data/Dataset/` directory.

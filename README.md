@@ -1,6 +1,6 @@
 - M. Beekenkamp
 
-# Examining if there a sentiment disparity in earnings calls between prepared presentations and real-time Q&As.
+# Investigation into the potential sentiment disparity in earnings calls between prepared presentations and real-time Q&As.
 
 ## Introduction
 
@@ -10,17 +10,19 @@ Every quarter investors eagerly await company's earnings calls to hear managemen
 
 All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code). The data contains Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020 in the form plain text files (.txt).
 
+TODO: Will likely use BERT or another pre-trained model alongside my own sentiment analysis model to compare the two. 
+
 ## Method
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+TODO: Explain the method used to analyse the data.
 
 ## Results
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+TODO: Explain the results of the analysis.
 
 ## Conclusion
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+TODO: Summarise the findings and suggest future expansion.
 
 ## References
 
