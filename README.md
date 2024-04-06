@@ -1,6 +1,6 @@
 - M. Beekenkamp
 
-# Investigation into the potential sentiment disparity in earnings calls between prepared presentations and real-time Q&As.
+# An investigation into the potential sentiment disparity in earnings calls between prepared presentations and real-time Q&As.
 
 ## Introduction
 
