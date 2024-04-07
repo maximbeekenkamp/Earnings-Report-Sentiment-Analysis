@@ -16,6 +16,8 @@ TODO: Will likely use BERT or another pre-trained model alongside my own sentime
 
 TODO: Explain the method used to analyse the data.
 
+A limitation in the project is that in the Q&A section I haven't isolated the answers from the questions, so the analysis will contain some noise from the questions. However, considering that the questions are asked by shareholders and ultimately this tool is for investors, the sentiment of the questions is not purely noise and could be useful information.
+
 ## Results
 
 TODO: Explain the results of the analysis.

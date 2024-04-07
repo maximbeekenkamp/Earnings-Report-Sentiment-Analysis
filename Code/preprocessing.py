@@ -8,7 +8,7 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 class DataSet:
-    def __init__(self, directory="Data/Dataset/Transcripts/"):
+    def __init__(self, directory="Data/Dataset/Transcripts/", singleCompany=False):
         """
         Load the data from the directory and cleans it.
         This class also does some basic data cleaning.
@@ -24,9 +24,11 @@ class DataSet:
             "Jul": 3, "Aug": 3, "Sep": 3,
             "Oct": 4, "Nov": 4, "Dec": 4,
         }
-        self.df = self.load_data()
+        self.df = None
+        self.train, self.test = self.load_data(singleCompany)
+        self.vocab = self.make_vocab()
 
-    def load_data(self):
+    def load_data(self, singleCompany=False):
         """
         Load the data from the directory and cleans it.
 
@@ -39,6 +41,8 @@ class DataSet:
                 - QA: the Q&A part of the transcript
         """
         for folder in os.listdir(self.directory):
+            if singleCompany and folder != singleCompany:
+                continue
             if folder == ".DS_Store":
                 continue
             for file in os.listdir(self.directory + folder):
@@ -65,7 +69,7 @@ class DataSet:
 
         self.df = pd.DataFrame(self.data_list, columns=["Year", "Quarter", "Company", "Presentation", "QA"])
         self.df = self.df.sort_values(by=["Company", "Year", "Quarter"]).reset_index(drop=True)
-        return self.df
+        return self.split_data()
     
     def clean_data(self, data: str):
         """
@@ -158,3 +162,46 @@ class DataSet:
         qa = [word for word in nltk.tokenize.word_tokenize(data[1]) if word not in stops]
 
         return pres, qa
+
+    def make_vocab(self):
+        """
+        Creates a dictionary which has each word for each company.
+
+        Returns:
+            dict: Returns a dictionary containing a dictionary with each word.
+        """
+        vocab = {}
+        for company in self.df["Company"].unique():
+            pres_unique_words = set(self.train[self.train["Company"] == company]["Presentation"].sum())
+            qa_unique_words = set(self.train[self.train["Company"] == company]["QA"].sum())
+            vocab[company] = {}
+            vocab[company]["Presentation"] = {w:i for i, w in enumerate(pres_unique_words)}
+            vocab[company]["QA"] = {w:i for i, w in enumerate(qa_unique_words)}
+        return vocab
+
+    def split_data(self):
+        """
+        Split the data into training and testing sets.
+
+        Returns:
+            df, df: Returns two dataframes, one for training and one for testing.
+        """
+        train = self.df[self.df["Year"] != "2020"]
+        test = self.df[self.df["Year"] == "2020"]
+        return train, test
+    
+    def split_pres_qa(self, df):
+        """
+        Helper function which will split a given dataframe into two lists, one for the presentation
+        and one for the Q&A.
+
+        Args:
+            df: The dataframe to be split.
+
+        Returns:
+            list, list: Returns two lists, one for the presentation and one for the Q&A.
+        """
+        pres = df["Presentation"].sum()
+        qa = df["QA"].sum()
+        return pres, qa
+        
