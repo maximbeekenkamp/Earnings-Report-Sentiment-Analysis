@@ -15,10 +15,11 @@ class Runner:
         """
         if not singleCompany:
             print("Running for all companies")
-            tfidf = TfIdf(pres_train, qa_train, [])
+            sim_list = []
             for company in self.corpus.df["Company"].unique():
                 df = self.corpus.df[self.corpus.df["Company"] == company]
                 pres_train, qa_train = self.corpus.split_pres_qa(df)
+                tfidf = TfIdf(pres_train, qa_train, sim_list)
                 
                 word_freq = WordFreq(pres_train, qa_train)
                 word_freq.count_words(company)

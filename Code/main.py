@@ -8,6 +8,7 @@ def main(singleCompany=False):
     network.run(singleCompany)
 
 
+# TODO: Add a command line argument to run on a specific model.
 if __name__ == "__main__":
     try:
         if len(sys.argv) - 1 == 1 and sys.argv[1] == "--company":
