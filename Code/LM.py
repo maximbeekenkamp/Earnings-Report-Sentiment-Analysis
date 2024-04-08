@@ -6,3 +6,7 @@ class LM:
         pass
     def RNN(self):
         pass
+    def LSTM(self):
+        pass
+    def GRU(self):
+        pass
