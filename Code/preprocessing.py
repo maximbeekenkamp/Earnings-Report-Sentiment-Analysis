@@ -1,11 +1,12 @@
 import os
 import pandas as pd
 import re
-import nltk 
+import nltk
 from nltk.corpus import stopwords
 
-nltk.download('stopwords')
-nltk.download('punkt')
+nltk.download("stopwords")
+nltk.download("punkt")
+
 
 class DataSet:
     def __init__(self, directory="Data/Dataset/Transcripts/", singleCompany=False):
@@ -67,10 +68,14 @@ class DataSet:
                             }
                         )
 
-        self.df = pd.DataFrame(self.data_list, columns=["Year", "Quarter", "Company", "Presentation", "QA"])
-        self.df = self.df.sort_values(by=["Company", "Year", "Quarter"]).reset_index(drop=True)
+        self.df = pd.DataFrame(
+            self.data_list, columns=["Year", "Quarter", "Company", "Presentation", "QA"]
+        )
+        self.df = self.df.sort_values(by=["Company", "Year", "Quarter"]).reset_index(
+            drop=True
+        )
         return self.split_data()
-    
+
     def clean_data(self, data: str):
         """
         Cleans the data by removing unwanted lines and characters.
@@ -80,7 +85,7 @@ class DataSet:
 
         Raises:
             ValueError: No 'Presentation' or 'OVERVIEW' found in the transcript.
-            This error is to catch if the data doesn't begin with the keyword 
+            This error is to catch if the data doesn't begin with the keyword
             'Presentation' or 'OVERVIEW'.
             ValueError: No 'Definitions' or 'Disclaimer' found in the transcript.
             This error is to catch if the data doesn't end with the keyword
@@ -91,7 +96,9 @@ class DataSet:
             presentation and the Q&A portions of the transcript.
 
         Returns:
-            list, list: Returns two lists, one for the presentation and one for the Q&A.
+            list, list: Returns two lists, one for the presentation which contains
+            a sub list for each paragraph containing all its tokens and one for
+            the Q&A which contains a sub list for each answer containing all its tokens.
         """
         # delete all lines before the first occurence of "Presentation" or "OVERVIEW"
         try:
@@ -100,7 +107,9 @@ class DataSet:
             try:
                 data = data.split("OVERVIEW", 1)[1]
             except IndexError:
-                raise ValueError("No 'Presentation' or 'OVERVIEW' found in the transcript")
+                raise ValueError(
+                    "No 'Presentation' or 'OVERVIEW' found in the transcript"
+                )
 
         # delete all lines after the first occurence of "Definitions" or "Disclaimer"
         try:
@@ -109,7 +118,9 @@ class DataSet:
             try:
                 data = data.split("Disclaimer", 1)[0]
             except IndexError:
-                raise ValueError("No 'Definitions' or 'Disclaimer' found in the transcript")
+                raise ValueError(
+                    "No 'Definitions' or 'Disclaimer' found in the transcript"
+                )
 
         undesired_lines = [
             "Thomson Reuters", "Refinitiv", "E D I T E D",
@@ -126,21 +137,24 @@ class DataSet:
         i = 0
         while i < len(data):
             try:
-                if data[i].startswith("--") and data[i+2].startswith("--"):
-                    undesired_lines.append(data[i+1])
+                if data[i].startswith("--") and data[i + 2].startswith("--"):
+                    undesired_lines.append(data[i + 1])
                     i += 3
                 else:
                     i += 1
             except IndexError:
                 break
-                
-        data = [line for line in data if not any(line.strip().startswith(token) for token in undesired_lines)]
+
+        data = [
+            line
+            for line in data
+            if not any(line.strip().startswith(token) for token in undesired_lines)
+        ]
         data = "\n".join(data)
 
-        data = re.sub(r'<Sync[^>]*>', '', data) # remove <Sync> tags
+        data = re.sub(r"<Sync[^>]*>", "", data)  # remove <Sync> tags
         data = data.lower()
         data = data.replace("\r", " ")
-        data = data.replace("\n", " ")
         data = data.replace(". ", " ")
         data = data.replace(", ", " ")
         data = data.replace("good morning", " ")
@@ -149,17 +163,82 @@ class DataSet:
         data = data.replace("good day", " ")
         data = data.replace("thank you", " ")
 
-        stops = set(stopwords.words('english'))
-        table_punctuation = str.maketrans('', '', '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
-
-        data = data.translate(table_punctuation)
         if "questions and answers" in data:
-            data = data.split("questions and answers", 1)
+            pres, qa = data.split("questions and answers", 1)
         else:
             raise ValueError("No 'Questions and Answers' found in the transcript")
 
-        pres = [word for word in nltk.tokenize.word_tokenize(data[0]) if word not in stops]
-        qa = [word for word in nltk.tokenize.word_tokenize(data[1]) if word not in stops]
+        pres = pres.split("\n")
+        table_punctuation = str.maketrans("", "", "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+        pres = [para.translate(table_punctuation) for para in pres]
+
+        qa = self.split_q_from_a(qa)
+        qa = [
+            (ques.translate(table_punctuation), ans.translate(table_punctuation))
+            for ques, ans in qa
+        ]
+
+        stops = set(stopwords.words("english"))
+        pres = [
+            [word for word in nltk.tokenize.word_tokenize(para) if word not in stops]
+            for para in pres
+        ]
+
+        # remove empty paragraphs (mainly an issue with AAPL formatting)
+        pres = [para for para in pres if para]
+
+        for i, (ques, ans) in enumerate(qa):
+            qa[i] = (
+                [
+                    word
+                    for word in nltk.tokenize.word_tokenize(ques)
+                    if word not in stops
+                ],
+                [
+                    word
+                    for word in nltk.tokenize.word_tokenize(ans)
+                    if word not in stops
+                ],
+            )
+            # cant fully catch every question / answer pair (currently only missing 3)
+            if not qa[i][0] or not qa[i][1]:
+                qa.pop(i)
+                i -= 1
+
+        # for some unknown bug, sometimes the questions / answers are not lists of
+        # individual word strings
+        for i, (ques, ans) in enumerate(qa):
+            if not isinstance(ques, list) and not isinstance(ans, list):
+                qa[i] = (
+                    [
+                        word
+                        for word in nltk.tokenize.word_tokenize(ques)
+                        if word not in stops
+                    ],
+                    [
+                        word
+                        for word in nltk.tokenize.word_tokenize(ans)
+                        if word not in stops
+                    ],
+                )
+            elif not isinstance(ques, list):
+                qa[i] = (
+                    [
+                        word
+                        for word in nltk.tokenize.word_tokenize(ques)
+                        if word not in stops
+                    ],
+                    ans,
+                )
+            elif not isinstance(ans, list):
+                qa[i] = (
+                    ques,
+                    [
+                        word
+                        for word in nltk.tokenize.word_tokenize(ans)
+                        if word not in stops
+                    ],
+                )
 
         return pres, qa
 
@@ -172,11 +251,25 @@ class DataSet:
         """
         vocab = {}
         for company in self.df["Company"].unique():
-            pres_unique_words = set(self.train[self.train["Company"] == company]["Presentation"].sum())
-            qa_unique_words = set(self.train[self.train["Company"] == company]["QA"].sum())
+            df = self.train[self.train["Company"] == company]
+            pres_unique_words = set()
+            paras = set()
+            for para in df["Presentation"]:
+                assert isinstance(para, list), "Presentation has no paragraphs."
+                paras = set([word for sublist in para for word in sublist])
+            pres_unique_words = pres_unique_words | paras
+
+            qa_unique_words = set()
+            for qa in df["QA"]:
+                assert isinstance(qa, list), "QA has no questions."
+                questions = set([word for sublist in qa for word in sublist[0]])
+                answers = set([word for sublist in qa for word in sublist[1]])
+                qa_unique_words = qa_unique_words | questions | answers
             vocab[company] = {}
-            vocab[company]["Presentation"] = {w:i for i, w in enumerate(pres_unique_words)}
-            vocab[company]["QA"] = {w:i for i, w in enumerate(qa_unique_words)}
+            vocab[company]["Presentation"] = {
+                w: i for i, w in enumerate(pres_unique_words)
+            }
+            vocab[company]["QA"] = {w: i for i, w in enumerate(qa_unique_words)}
         return vocab
 
     def split_data(self):
@@ -189,19 +282,67 @@ class DataSet:
         train = self.df[self.df["Year"] != "2020"]
         test = self.df[self.df["Year"] == "2020"]
         return train, test
-    
+
     def split_pres_qa(self, df):
         """
-        Helper function which will split a given dataframe into two lists, one for the presentation
+        Helper function which will split a given dataframe into two, one for the presentation
         and one for the Q&A.
 
         Args:
             df: The dataframe to be split.
 
         Returns:
-            list, list: Returns two lists, one for the presentation and one for the Q&A.
+            df, df: Returns two dfs, one for the presentation and one for the Q&A.
         """
-        pres = df["Presentation"].sum()
-        qa = df["QA"].sum()
+        pres = df["Presentation"]
+        qa = df["QA"]
         return pres, qa
-        
+
+
+
+    def split_q_from_a(self, data):
+        """
+        Splits the Q&A into a tuple of questions and answers.
+
+        Args:
+            data (str): The raw string Q&A data from the .txt file.
+
+        Returns:
+            list of tuples: Returns the Q&A data as a list of questions and their answers.
+        """
+        questions = ""
+        answers = ""
+        data = data.split("\n")
+        i = 0
+        out = []
+        while i < len(data):
+            if "?" in data[i]:
+                questions = data[i]
+                i += 1
+                # catching question chains
+                while i < len(data) and not data[i]:
+                    i += 1
+                a = 0
+                while i < len(data) and "?" in data[i]:
+                    if a % 2 == 0:
+                        answers += "" + data[i]
+                    else:
+                        questions += "" + data[i]
+                    i += 1
+                    while i < len(data) and not data[i]:
+                        i += 1
+                    a += 1
+
+                while i < len(data) and not "?" in data[i]:
+                    answers += "" + data[i]
+                    i += 1
+
+                assert type(questions) == str, "Questions is not a string"
+                assert type(answers) == str, "Answers is not a string"
+                out.append((questions, answers))
+
+                questions = ""
+                answers = ""
+            i += 1
+
+        return out

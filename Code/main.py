@@ -24,7 +24,6 @@ if __name__ == "__main__":
         else:
             raise AttributeError("Invalid inputs.")
 
-    except(IOError, FileNotFoundError):
+    except (IOError, FileNotFoundError):
         print("Input error, Company not recognised.")
         sys.exit
-

@@ -1,17 +1,15 @@
 import matplotlib.pyplot as plt
 
-from preprocessing import DataSet
-
 
 class Plotter:
-    def __init__(self, company, word_freq=None, sim_dict=None):
+    def __init__(self, company, corpus, word_freq=None, sim_dict=None):
         """
         Class contains all the plotting functions for the project.
 
         Args:
             company (str): string containing the company name.
             word_freq (dict): dictionary containing the word frequencies for each company.
-            section (str, optional): string to choose what type of data needs to be plotted. 
+            section (str, optional): string to choose what type of data needs to be plotted.
             Defaults to "both".
             sim_dict (dict): dictionary containing the cosine similarity between the presentation
             and QA sections for each company.
@@ -19,22 +17,19 @@ class Plotter:
         self.company = company
         if word_freq is not None:
             self.word_freq = word_freq[company]
-            self.word_to_token_dict = DataSet().vocab
+            self.word_to_token_dict = corpus.vocab
             self.word_to_token_dict = self.word_to_token_dict[company]
             self.token_to_word_dict = {"Presentation": {}, "QA": {}}
-        
+
         if sim_dict is not None:
             self.sim_dict = sim_dict[company]
 
-
-
-
-    def plot_word_freq(self, section="both", n=50):
+    def plot_word_freq(self, section="both", n=20):
         """
         Plots the n most common words for the given company and section.
 
         Args:
-            section (str, optional): Allows toggling between displaying only the Presentation, 
+            section (str, optional): Allows toggling between displaying only the Presentation,
             QA, or both sections. Defaults to "both".
             n (int, optional): the number of words to plot. Defaults to 50.
 
@@ -44,6 +39,7 @@ class Plotter:
         Returns:
             None: Displays the plot.
         """
+
         def plot_freq(section, n):
             """
             Plots the n most common words for the given company and section.
@@ -57,14 +53,7 @@ class Plotter:
             self.token_to_word_dict[section] = {
                 v: k for k, v in self.word_to_token_dict[section].items()
             }
-            # debugging tool:
-            for i in range(len(self.word_to_token_dict[section])):
-                assert (
-                    self.word_to_token_dict[section][
-                        self.token_to_word_dict[section][i]
-                    ]
-                    == i
-                ), "Token to word dictionary doesn't match the word to token dictionary."
+
             most_common_words, most_common_occurrences = zip(*word_freq.most_common(n))
 
             _, ax_most_common = plt.subplots()

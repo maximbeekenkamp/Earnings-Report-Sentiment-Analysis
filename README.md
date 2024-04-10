@@ -104,9 +104,19 @@ This projects includes three main methods of analysis:
 3. Pre-trained Sentiment Analysis
     - This section uses a pre-trained sentiment analysis model as a starting point, and then fine-tunes the model for our dataset.
 
-A limitation in the project is that in the Q&A section I haven't isolated the answers from the questions, so the analysis will contain some noise from the questions. This is because there is no reliable formatting convention that would allow me to systematically separate the two. However, considering that the questions are asked by shareholders and ultimately this tool is for investors, the sentiment of the questions is perhaps not purely noise and could be useful in part.
+### Data Preprocessing
+
+The data is split into two sections: the prepared presentation and the Q&A section. The data is then preprocessed to remove any unnecessary information.  The data is then tokenised and split 80-20 training testing ready for further analysis.
+
+### Document Similarity Analysis
+
+Durign the preprocessing each paragraph from a presentation is stored separately in a list. Similarly, I have largely been successful in isolating questuions and their answers. See known issues for more information. This then allows me to find what part of the presentation is referring to, and then calculate the cosine similarity between that portion of the presentation and the question's answer.
+
 
 ### Maths Review
+
+#### Classical Methods
+
 
 <details>
 <summary>TF-IDF</summary>
@@ -170,9 +180,32 @@ Paper: https://arxiv.org/pdf/1412.3555.pdf
 
 TODO: Explain the results of the analysis.
 
+Average cosine similarity scores between Presentation and Q&A sections for all companies:
+
+Company | Similarity Score
+--------|------------------
+Apple   | 0.005724528358299149
+Micron  | 0.004511450411863104
+AMD     | 0.0034561182556843368
+Cisco   | 0.003183211576871998
+Microsoft | 0.0030065455173247137
+ASML    | 0.0027957038177055717
+Intel   | 0.002509023167766068
+Google  | 0.0020544411644190866
+NVIDIA  | 0.001820643409677109
+Amazon  | 0.0012288810752276213
+
+
 ## Conclusion
 
 TODO: Summarise the findings and suggest future expansion.
+
+## Known Issues
+Currently, there are two known issues with the code:
+1. [`preprocessing.py`](Code/preprocessing.py), func: `clean_data` Currently there are three cases in which the there will be a question with no associated answer. In these cases the question answer pair are discarded.
+
+2. [`preprocessing.py`](Code/preprocessing.py), func: `clean_data` Currently there are handful of instances, particularly in the AMZN files, where questions/answers aren't tokenised. Although the root cause of this issue is unknown, it seems to occur when there are multiple questions being asked in succession. In these cases the question/answer are tokenised again.
+
 
 ## References
 
