@@ -87,7 +87,7 @@ To exit the program at any time, you can simply type `:exit` inside the REPL.
 
 ## Data Sources and Descriptions
 
-All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code). The data contains Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020 in the form plain text files (.txt).
+All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code)[^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated. This is to allow for a more granular analysis of the data.
 
 TODO: Will likely use BERT or another pre-trained model alongside my own sentiment analysis model to compare the two. 
 
@@ -97,20 +97,22 @@ TODO: Explain the method used to analyse the data.
 
 This projects includes three main methods of analysis:
 1. Document Similarity Analysis
-    - This section compares the similarity between the prepared presentation and the Q&A section of the earnings call for each company. This is achieved via TF-IDF and cosine similarity.
+    - This section compares the similarity between the prepared presentation and the Q&A section of the earnings call for each company. This is achieved via TF-IDF embeddings, doc2vec embeddings, and a custom embedding method, which are then used to calculate cosine similarity.
 2. Transformer Sentiment Analysis
     - This section uses a pre-trained transformer model to generate sentiment labels for the prepared presentation and Q&A section of the earnings call for each company. 
     - These are used as the training labels for the RNN, LSTM, and GRU models. Then the transformer models are used to generate new sentiment labels.
 3. Pre-trained Sentiment Analysis
     - This section uses a pre-trained sentiment analysis model as a starting point, and then fine-tunes the model for our dataset.
 
-### Data Preprocessing
+### Embedding Techniques
 
-The data is split into two sections: the prepared presentation and the Q&A section. The data is then preprocessed to remove any unnecessary information.  The data is then tokenised and split 80-20 training testing ready for further analysis.
+#### TF-IDF Embeddings
+
+A common technique for creating text embeddings is to use the Term Frequency-Inverse Document Frequency (TF-IDF) method. See the Maths Review section for more information on TF-IDF.
 
 ### Document Similarity Analysis
 
-Durign the preprocessing each paragraph from a presentation is stored separately in a list. Similarly, I have largely been successful in isolating questuions and their answers. See known issues for more information. This then allows me to find what part of the presentation is referring to, and then calculate the cosine similarity between that portion of the presentation and the question's answer.
+Once the textual content is represented using these embedding techniques, cosine similarity is calculated between corresponding segments of the presentation and the Q&A section. Specifically, for a given question answer pair, I take the section (paragraph) of the presentation which is most similar to the question, and then calculate the cosine similarity between that paragraph and the question's answer.
 
 
 ### Maths Review
@@ -182,7 +184,7 @@ TODO: Explain the results of the analysis.
 
 Average cosine similarity scores between Presentation and Q&A sections for all companies:
 
-Company | Similarity Score (TF-IDF Embeddings)
+Company | TF-IDF Embeddings
 --------|------------------
 Apple   | 0.00620438641453739
 Micron  | 0.005058904864883506
@@ -208,6 +210,6 @@ Currently, there are two known issues with the code:
 
 
 ## References
-
-`Data/Dataset/`: <br>
-[Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code) (released: 07/03/2024) <br><br>
+[^1]:
+    `Data/Dataset/`: <br>
+    [Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code) (released: 07/03/2024) <br><br>
