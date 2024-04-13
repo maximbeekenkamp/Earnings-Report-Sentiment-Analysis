@@ -181,8 +181,13 @@ Paper: https://arxiv.org/pdf/1412.3555.pdf
 ## Results
 
 TODO: Explain the results of the analysis.
+**Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:**
 
-Average cosine similarity scores between Presentation and Q&A sections for all companies:
+
+<p>
+    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
+    <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
 
 Company | TF-IDF Embeddings
 --------|------------------
@@ -196,13 +201,6 @@ Microsoft | 0.003374062957867656
 Intel   | 0.0027762305489947518
 NVIDIA  | 0.0025780134669955166
 Amazon  | 0.0015476103006760518
-
-Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:
-
-<p>
-    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
-    <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
-</p>
 
 ## Conclusion
 
