@@ -197,6 +197,9 @@ Intel   | 0.0027762305489947518
 NVIDIA  | 0.0025780134669955166
 Amazon  | 0.0015476103006760518
 
+Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:
+
+![TF-IDF Embeddings, error bars represent the minimum and maximum cosine similarity scores.](Images/TFIDF_barchart.png)
 
 ## Conclusion
 

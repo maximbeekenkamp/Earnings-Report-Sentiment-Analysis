@@ -14,7 +14,7 @@ if __name__ == "__main__":
         if len(sys.argv) - 1 == 1 and sys.argv[1] == "--company":
             while True:
                 type_in = input(">> ")
-                if type_in == ":quit":
+                if type_in == ":exit":
                     break
                 runquery = main(type_in)
 
@@ -22,8 +22,12 @@ if __name__ == "__main__":
             runquery = main()
 
         else:
-            raise AttributeError("Invalid inputs.")
+            raise AttributeError("Invalid input flag.")
 
     except (IOError, FileNotFoundError):
         print("Input error, Company not recognised.")
-        sys.exit
+        sys.exit(1)
+    except KeyError:
+        print("Input error, Company not recognised.")
+        sys.exit(1)
+

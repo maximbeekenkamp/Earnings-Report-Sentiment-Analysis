@@ -183,7 +183,11 @@ class DataSet:
         stops = set(stopwords.words("english"))
         wnl = WordNetLemmatizer()
         pres = [
-            [wnl.lemmatize(word) for word in nltk.tokenize.word_tokenize(para) if word not in stops]
+            [
+                wnl.lemmatize(word)
+                for word in nltk.tokenize.word_tokenize(para)
+                if word not in stops
+            ]
             for para in pres
         ]
 
@@ -300,8 +304,6 @@ class DataSet:
         pres = df["Presentation"]
         qa = df["QA"]
         return pres, qa
-
-
 
     def split_q_from_a(self, data):
         """

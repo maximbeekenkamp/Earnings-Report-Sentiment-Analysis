@@ -1,6 +1,5 @@
 from preprocessing import DataSet
-from word_freq import WordFreq
-
+from tokens import Tokeniser
 from embeddings import Embeddings
 from similarity import Similarity
 
@@ -20,24 +19,29 @@ class Runner:
         if not singleCompany:
             print("Running for all companies")
             sim_list = []
+            sim_dict = {}
             for company in self.corpus.df["Company"].unique():
                 train = self.corpus.train[self.corpus.train["Company"] == company]
                 pres_train, qa_train = self.corpus.split_pres_qa(train)
                 # pres_train format: [Report#(0-15)[Para[Word[str]]]]
                 # qa_train format: [Report#(0-15)[(Ques[Word[str]], Ans[Word[str]])]]
+                tokens = Tokeniser(pres_train, qa_train, self.corpus)
+                tokens.count_words(company)
 
-                tfidf_emmbedings = Embeddings(pres_train, qa_train, self.vocab[company])
+                tfidf_emmbedings = Embeddings(pres_train, qa_train)
                 tfidf_emmbedings.embedding_matrix(company, "tfidf")
 
-                similarity = Similarity(pres_train, tfidf_emmbedings.tfidf_dict, sim_list, self.vocab[company])
+                similarity = Similarity(
+                    len(pres_train), tfidf_emmbedings.tfidf_dict, sim_dict, sim_list
+                )
+                sim_dict[company] = similarity.similarity_dict
+                sim_list = similarity.similarity_ranked
                 similarity.sim_score(company)
-
-
-                word_freq = WordFreq(pres_train, qa_train, self.corpus)
-                word_freq.count_words(company)
+            tokens.plotObj.plot_report_similarity_bar(sim_dict)
 
             print(
-                "Similarity scores between Presentation and Q&A sections for all companies:"
+                "Similarity scores between Presentation and Q&A "
+                "sections for all companies:"
             )
             for comp, sim in similarity.similarity_ranked:
                 print(f"{comp}: {sim}")
@@ -45,19 +49,25 @@ class Runner:
         else:
             company = singleCompany
             print(f"Running for {company}")
-            df = self.corpus.df[self.corpus.df["Company"] == company]
-            pres_train, qa_train = self.corpus.split_pres_qa(df)
+            train = self.corpus.train[self.corpus.train["Company"] == company]
+            pres_train, qa_train = self.corpus.split_pres_qa(train)
 
-            tfidf_emmbedings = Embeddings(pres_train, qa_train, self.vocab[company])
+            tokens = Tokeniser(pres_train, qa_train, self.corpus)
+            tokens.count_words(company)
+
+            tfidf_emmbedings = Embeddings(pres_train, qa_train)
             tfidf_emmbedings.embedding_matrix(company, "tfidf")
 
-            similarity = Similarity(pres_train, tfidf_emmbedings.tfidf_dict, [], self.vocab[company])
+            similarity = Similarity(
+                len(pres_train), tfidf_emmbedings.tfidf_dict, {}, []
+            )
             similarity.sim_score(company)
 
-            word_freq = WordFreq(pres_train, qa_train, self.corpus)
-            word_freq.count_words(company)
+            tokens.plotObj.plot_report_similarity_line(
+                similarity.similarity_dict, singleCompany=True
+            )
 
             print(
-                f"Similarity for {company} between Presentation and Q&A \
-                sections: {similarity.similarity_ranked[0][1]}"
+                f"Similarity for {company} between Presentation and Q&A "
+                f"sections: {similarity.similarity_ranked[0][1]}"
             )
