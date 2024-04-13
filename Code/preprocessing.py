@@ -3,9 +3,11 @@ import pandas as pd
 import re
 import nltk
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 
 nltk.download("stopwords")
 nltk.download("punkt")
+nltk.download("wordnet")
 
 
 class DataSet:
@@ -21,7 +23,7 @@ class DataSet:
         self.data_list = []
         self.month_to_quarter = {
             "Jan": 1, "Feb": 1, "Mar": 1,
-            "Apr": 2, "May": 2, "Jun": 2, 
+            "Apr": 2, "May": 2, "Jun": 2,
             "Jul": 3, "Aug": 3, "Sep": 3,
             "Oct": 4, "Nov": 4, "Dec": 4,
         }
@@ -179,8 +181,9 @@ class DataSet:
         ]
 
         stops = set(stopwords.words("english"))
+        wnl = WordNetLemmatizer()
         pres = [
-            [word for word in nltk.tokenize.word_tokenize(para) if word not in stops]
+            [wnl.lemmatize(word) for word in nltk.tokenize.word_tokenize(para) if word not in stops]
             for para in pres
         ]
 
@@ -190,12 +193,12 @@ class DataSet:
         for i, (ques, ans) in enumerate(qa):
             qa[i] = (
                 [
-                    word
+                    wnl.lemmatize(word)
                     for word in nltk.tokenize.word_tokenize(ques)
                     if word not in stops
                 ],
                 [
-                    word
+                    wnl.lemmatize(word)
                     for word in nltk.tokenize.word_tokenize(ans)
                     if word not in stops
                 ],
@@ -211,12 +214,12 @@ class DataSet:
             if not isinstance(ques, list) and not isinstance(ans, list):
                 qa[i] = (
                     [
-                        word
+                        wnl.lemmatize(word)
                         for word in nltk.tokenize.word_tokenize(ques)
                         if word not in stops
                     ],
                     [
-                        word
+                        wnl.lemmatize(word)
                         for word in nltk.tokenize.word_tokenize(ans)
                         if word not in stops
                     ],
@@ -224,7 +227,7 @@ class DataSet:
             elif not isinstance(ques, list):
                 qa[i] = (
                     [
-                        word
+                        wnl.lemmatize(word)
                         for word in nltk.tokenize.word_tokenize(ques)
                         if word not in stops
                     ],
@@ -234,7 +237,7 @@ class DataSet:
                 qa[i] = (
                     ques,
                     [
-                        word
+                        wnl.lemmatize(word)
                         for word in nltk.tokenize.word_tokenize(ans)
                         if word not in stops
                     ],

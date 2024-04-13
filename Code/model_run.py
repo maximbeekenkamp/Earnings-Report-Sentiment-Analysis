@@ -1,6 +1,8 @@
 from preprocessing import DataSet
 from word_freq import WordFreq
-from tfidf import TfIdf
+
+from embeddings import Embeddings
+from similarity import Similarity
 
 
 class Runner:
@@ -24,17 +26,20 @@ class Runner:
                 # pres_train format: [Report#(0-15)[Para[Word[str]]]]
                 # qa_train format: [Report#(0-15)[(Ques[Word[str]], Ans[Word[str]])]]
 
-                tfidf = TfIdf(pres_train, qa_train, sim_list, self.vocab[company])
-                tfidf.similarity(company)
+                tfidf_emmbedings = Embeddings(pres_train, qa_train, self.vocab[company])
+                tfidf_emmbedings.embedding_matrix(company, "tfidf")
+
+                similarity = Similarity(pres_train, tfidf_emmbedings.tfidf_dict, sim_list, self.vocab[company])
+                similarity.sim_score(company)
+
 
                 word_freq = WordFreq(pres_train, qa_train, self.corpus)
                 word_freq.count_words(company)
 
             print(
-                "Similarity scores between Presentation \
-                    and Q&A sections for all companies:"
+                "Similarity scores between Presentation and Q&A sections for all companies:"
             )
-            for comp, sim in tfidf.similarity_ranked:
+            for comp, sim in similarity.similarity_ranked:
                 print(f"{comp}: {sim}")
 
         else:
@@ -43,13 +48,16 @@ class Runner:
             df = self.corpus.df[self.corpus.df["Company"] == company]
             pres_train, qa_train = self.corpus.split_pres_qa(df)
 
+            tfidf_emmbedings = Embeddings(pres_train, qa_train, self.vocab[company])
+            tfidf_emmbedings.embedding_matrix(company, "tfidf")
+
+            similarity = Similarity(pres_train, tfidf_emmbedings.tfidf_dict, [], self.vocab[company])
+            similarity.sim_score(company)
+
             word_freq = WordFreq(pres_train, qa_train, self.corpus)
             word_freq.count_words(company)
 
-            tfidf = TfIdf(pres_train, qa_train, [], self.vocab[company])
-            tfidf.similarity(company)
-
             print(
                 f"Similarity for {company} between Presentation and Q&A \
-                sections: {tfidf.similarity_ranked[0][1]}"
+                sections: {similarity.similarity_ranked[0][1]}"
             )

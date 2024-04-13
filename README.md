@@ -182,18 +182,18 @@ TODO: Explain the results of the analysis.
 
 Average cosine similarity scores between Presentation and Q&A sections for all companies:
 
-Company | Similarity Score
+Company | Similarity Score (TF-IDF Embeddings)
 --------|------------------
-Apple   | 0.005724528358299149
-Micron  | 0.004511450411863104
-AMD     | 0.0034561182556843368
-Cisco   | 0.003183211576871998
-Microsoft | 0.0030065455173247137
-ASML    | 0.0027957038177055717
-Intel   | 0.002509023167766068
-Google  | 0.0020544411644190866
-NVIDIA  | 0.001820643409677109
-Amazon  | 0.0012288810752276213
+Apple   | 0.00620438641453739
+Micron  | 0.005058904864883506
+Google  | 0.004305539921222904
+ASML    | 0.0040679289470081145
+AMD     | 0.003693839986579608
+Cisco   | 0.0036762236455800375
+Microsoft | 0.003374062957867656
+Intel   | 0.0027762305489947518
+NVIDIA  | 0.0025780134669955166
+Amazon  | 0.0015476103006760518
 
 
 ## Conclusion
