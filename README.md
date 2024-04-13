@@ -199,7 +199,10 @@ Amazon  | 0.0015476103006760518
 
 Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:
 
-![TF-IDF Embeddings, error bars represent the minimum and maximum cosine similarity scores.](Data/Images/TFIDF_barchart.png)
+<p>
+    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" width="300"/>
+    <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
 
 ## Conclusion
 
