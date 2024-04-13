@@ -87,13 +87,13 @@ To exit the program at any time, you can simply type `:exit` inside the REPL.
 
 ## Data Sources and Descriptions
 
-All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code)[^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated. This is to allow for a more granular analysis of the data.
+All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code) [^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated. This is to allow for a more granular analysis of the data.
 
-TODO: Will likely use BERT or another pre-trained model alongside my own sentiment analysis model to compare the two. 
+<!-- TODO: Will likely use BERT or another pre-trained model alongside my own sentiment analysis model to compare the two.  -->
 
 ## Method
 
-TODO: Explain the method used to analyse the data.
+<!-- TODO: Explain the method used to analyse the data. -->
 
 This projects includes three main methods of analysis:
 1. Document Similarity Analysis
@@ -163,7 +163,7 @@ A Recurrent Neural Network (RNN) is a type of neural network that is designed to
 
 A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of an LSTM is as follows:
 
-TODO: Insert formula / Insert Diagram
+<!-- TODO: Insert formula / Insert Diagram -->
 
 </details>
 
@@ -173,14 +173,15 @@ TODO: Insert formula / Insert Diagram
 
 A Gated Recurrent Unit (GRU) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of a GRU is as follows:
 
-TODO: Insert formula / Insert Diagram
+<!-- TODO: Insert formula / Insert Diagram -->
 Paper: https://arxiv.org/pdf/1412.3555.pdf
 
 </details>
 
 ## Results
 
-TODO: Explain the results of the analysis.
+<!-- TODO: Explain the results of the analysis. -->
+
 **Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:**
 
 
@@ -204,7 +205,7 @@ Amazon  | 0.0015476103006760518
 
 ## Conclusion
 
-TODO: Summarise the findings and suggest future expansion.
+<!-- TODO: Summarise the findings and suggest future expansion. -->
 
 ## Known Issues
 Currently, there are two known issues with the code:
