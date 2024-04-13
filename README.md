@@ -190,6 +190,8 @@ Paper: https://arxiv.org/pdf/1412.3555.pdf
     <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
 
+The large error bars suggest that, according to the TF-IDF embeddings, the similarity between the presentation and Q&A sections varies greatly between each report. 
+
 Company | TF-IDF Embeddings
 --------|------------------
 Apple   | 0.00620438641453739
