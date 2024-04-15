@@ -154,7 +154,7 @@ class DataSet:
         ]
         data = "\n".join(data)
 
-        data = re.sub(r"<Sync[^>]*>", "", data)  # remove <Sync> tags
+        data = re.sub(r"<Sync[^>]*>", "", data)
         data = data.lower()
         data = data.replace("\r", " ")
         data = data.replace(". ", " ")
@@ -208,12 +208,13 @@ class DataSet:
                 ],
             )
             # cant fully catch every question / answer pair (currently only missing 3)
+            # see README.md for more information
             if not qa[i][0] or not qa[i][1]:
                 qa.pop(i)
                 i -= 1
 
-        # for some unknown bug, sometimes the questions / answers are not lists of
-        # individual word strings
+        # for some unknown reason, sometimes the questions / answers are not lists of
+        # individual word strings, see README.md for more information
         for i, (ques, ans) in enumerate(qa):
             if not isinstance(ques, list) and not isinstance(ans, list):
                 qa[i] = (

@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Plotter:
-    def __init__(self, company, corpus, word_freq=None):
+    def __init__(self, company, word_freq=None):
         """
         Class contains all the plotting functions for the project.
 
@@ -18,9 +18,6 @@ class Plotter:
         self.company = company
         if word_freq is not None:
             self.word_freq = word_freq[company]
-            self.word_to_token_dict = corpus.vocab
-            self.word_to_token_dict = self.word_to_token_dict[company]
-            self.token_to_word_dict = {"Presentation": {}, "QA": {}}
 
     def plot_word_freq(self, section="both", n=20):
         """
@@ -49,9 +46,6 @@ class Plotter:
             plt.figure()
             word_freq = self.word_freq[section]
             title = f"{section} word frequency for {self.company}"
-            self.token_to_word_dict[section] = {
-                v: k for k, v in self.word_to_token_dict[section].items()
-            }
 
             most_common_words, most_common_occurrences = zip(*word_freq.most_common(n))
 

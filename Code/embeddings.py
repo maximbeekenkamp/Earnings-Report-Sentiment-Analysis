@@ -1,5 +1,22 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+class Tokens:
+    def __init__(self, corpus, company):
+        """
+        Class to create tokens for the presentation and QA sections of
+        a single company's report.
+
+        Args:
+            corpus (DataSet): DataSet class object containing the data.
+            company (str): A company's ticker symbol.
+        """
+        self.word_to_token_dict = corpus.vocab
+        self.word_to_token_dict = self.word_to_token_dict[company]
+        self.token_to_word_dict = {"Presentation": {}, "QA": {}}
+        for section in self.token_to_word_dict.keys():
+            self.token_to_word_dict[section] = {
+                v: k for k, v in self.word_to_token_dict[section].items()
+            }
 
 class Embeddings:
     def __init__(self, pres_df, qa_df):
@@ -88,3 +105,5 @@ class Embeddings:
 
     def doc2vec(self, company, pres, qa, i):
         pass
+
+        

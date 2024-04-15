@@ -3,17 +3,16 @@ from collections import Counter
 from plot import Plotter
 
 
-class Tokeniser:
-    def __init__(self, pres_text, qa_text, corpus):
+class WordFreq:
+    def __init__(self, pres_text, qa_text):
         """
-        Tokeniser class to count the words in the presentation and QA sections.
+        WordFreq class to count the words in the presentation and QA sections.
 
         Args:
             pres_text (df): DataFrame containing the presentation text.
             Format: [Report#(0-15)[Para[Word[str]]]]
             qa_text (df): DataFrame containing the QA text.
             Format: [Report#(0-15)[(Ques[Word[str]], Ans[Word[str]])]]
-            corpus (DataSet): DataSet class object containing the data.
         """
         self.pres_text = [word for sublist in pres_text for word in sublist]
         self.pres_text = [word for sublist in self.pres_text for word in sublist]
@@ -22,7 +21,6 @@ class Tokeniser:
             word for sublist in self.qa_text for item in sublist for word in item
         ]
         self.word_freq = {}
-        self.corpus = corpus
         self.plotObj = None
 
     def count_words(self, company):
@@ -38,5 +36,5 @@ class Tokeniser:
         self.word_freq[company]["Presentation"] = Counter(self.pres_text)
         self.word_freq[company]["QA"] = Counter(self.qa_text)
 
-        self.plotObj = Plotter(company, corpus=self.corpus, word_freq=self.word_freq)
+        self.plotObj = Plotter(company, word_freq=self.word_freq)
         self.plotObj.plot_word_freq()

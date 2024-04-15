@@ -1,7 +1,8 @@
 from preprocessing import DataSet
-from tokens import Tokeniser
+from wordfreq import WordFreq
 from embeddings import Embeddings
 from similarity import Similarity
+from plot import Plotter
 
 
 class Runner:
@@ -25,8 +26,8 @@ class Runner:
                 pres_train, qa_train = self.corpus.split_pres_qa(train)
                 # pres_train format: [Report#(0-15)[Para[Word[str]]]]
                 # qa_train format: [Report#(0-15)[(Ques[Word[str]], Ans[Word[str]])]]
-                tokens = Tokeniser(pres_train, qa_train, self.corpus)
-                tokens.count_words(company)
+                wordfreq = WordFreq(pres_train, qa_train)
+                wordfreq.count_words(company)
 
                 tfidf_emmbedings = Embeddings(pres_train, qa_train)
                 tfidf_emmbedings.embedding_matrix(company, "tfidf")
@@ -37,7 +38,8 @@ class Runner:
                 sim_dict[company] = similarity.similarity_dict
                 sim_list = similarity.similarity_ranked
                 similarity.sim_score(company)
-            tokens.plotObj.plot_report_similarity_bar(sim_dict)
+            plot = Plotter("All")
+            plot.plot_report_similarity_bar(sim_dict)
 
             print(
                 "Similarity scores between Presentation and Q&A "
@@ -52,8 +54,8 @@ class Runner:
             train = self.corpus.train[self.corpus.train["Company"] == company]
             pres_train, qa_train = self.corpus.split_pres_qa(train)
 
-            tokens = Tokeniser(pres_train, qa_train, self.corpus)
-            tokens.count_words(company)
+            wordfreq = WordFreq(pres_train, qa_train)
+            wordfreq.count_words(company)
 
             tfidf_emmbedings = Embeddings(pres_train, qa_train)
             tfidf_emmbedings.embedding_matrix(company, "tfidf")
@@ -63,7 +65,8 @@ class Runner:
             )
             similarity.sim_score(company)
 
-            tokens.plotObj.plot_report_similarity_line(
+            plot = Plotter(company)
+            plot.plot_report_similarity_line(
                 similarity.similarity_dict, singleCompany=True
             )
 

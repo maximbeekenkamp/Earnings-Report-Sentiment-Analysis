@@ -87,7 +87,7 @@ To exit the program at any time, you can simply type `:exit` inside the REPL.
 
 ## Data Sources and Descriptions
 
-All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code) [^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated. This is to allow for a more granular analysis of the data.
+All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) [^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated. This is to allow for a more granular analysis of the data.
 
 <!-- TODO: Will likely use BERT or another pre-trained model alongside my own sentiment analysis model to compare the two.  -->
 
@@ -157,13 +157,34 @@ Where:
 
 A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the LSTM and GRU networks.
 
+<p>
+    <img src="Data/Images/RNNs.jpg" alt="RNNs" style="max-width: 90%;"/>
+    <em> Diagram of RNNs. [^2]</em>
+</p>
+
 <details>
 <summary>LSTM</summary>
 #### LSTM
 
 A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of an LSTM is as follows:
 
-<!-- TODO: Insert formula / Insert Diagram -->
+- $x_t$ is the current input at timestep $t$.
+- $h_{t-1}$ and $c_{t-1}$ are the previous hidden and cell states.
+$$
+\begin{align*}
+    f_t &= \sigma \left( W_f x_t + U_f h_{t-1} + b_f \right) & \textsf{Forget Module} \\
+    i_t &= \sigma \left( W_i x_t + U_i h_{t-1} + b_i \right) & \textsf{Remember Module}\\
+    \tilde{c}_t &= \tanh \left( W_c x_t + U_c h_{t-1} + b_c \right) & \textsf{New Memory}\\
+    c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t  & \textsf{Cell State Update}\\
+    o_t &= \sigma \left( W_o x_t + U_o h_{t-1} + b_o \right) & \textsf{Output Module}\\
+    h_t &= o_t \odot \tanh(c_t)  & \textsf{Output, Hidden State Update}\\
+\end{align*}
+$$
+
+<p>
+    <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
+    <em> Diagram of an LSTM Gate. [^3]</em>
+</p>
 
 </details>
 
@@ -171,10 +192,24 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 <summary>GRU</summary>
 #### GRU
 
-A Gated Recurrent Unit (GRU) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of a GRU is as follows:
+A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of a GRU is as follows:
 
-<!-- TODO: Insert formula / Insert Diagram -->
-Paper: https://arxiv.org/pdf/1412.3555.pdf
+
+- $x_t$ is the current input at timestep $t$.
+- $h_{t-1}$ is the previous hidden state.
+$$
+\begin{align*}
+    z_t &= \sigma \left( W_z x_t + U_z h_{t-1} + b_z \right) & \textsf{Update Gate Vector}\\
+    r_t &= \sigma \left( W_r x_t + U_r h_{t-1} + b_r \right) & \textsf{Reset Gate Vector}\\
+    \hat{h}_t &= \tanh \left( W_h x_t + r_t \odot ( U_h h_{t-1}) + b_h \right) & \textsf{Candidate Activation Vector}\\
+    h_t &= z_t \odot h_{t-1} + (1 - z_t) \odot \hat{h}_t  & \textsf{Output, Hidden State Update}\\
+\end{align*}
+$$
+
+<p>
+    <img src="Data/Images/GRU_gate.jpg" alt="GRU Gate" style="max-width: 90%;"/>
+    <em> Diagram of a GRU Gate. [^5]</em>
+</p>
 
 </details>
 
@@ -219,4 +254,23 @@ Currently, there are two known issues with the code:
 ## References
 [^1]:
     `Data/Dataset/`: <br>
-    [Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/code) (released: 07/03/2024) <br><br>
+    [Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) (released: 03/07/2024) <br><br>
+[^2]:
+    `Data/Images/RNNs.jpg`: <br>
+    Kalia, Robin (2021) “Recurrent Neural Networks (RNN), Gated Recurrent Units (GRU), and Long Short-Term Memory (LSTM).”
+    [LinkedIn](https://www.linkedin.com/pulse/recurrent-neural-networks-rnn-gated-units-gru-long-short-robin-kalia/)
+    (released: 07/02/2021)<br><br>
+[^3]:
+    `Data/Images/LSTM_gate.jpg`: <br>
+    Varsamopoulos, Savvas, Koen Bertels, and Carmen Almudever (2018) “Designing neural network based decoders for surface codes,”
+    [ResearchGate](https://www.researchgate.net/publication/329362532_Designing_neural_network_based_decoders_for_surface_codes)
+    (released: 01/11/2018)<br><br>
+[^4]:
+    Chung, Junyoung, Caglar Gulcehre, KyungHyun Cho, and Yoshua Bengio (2014) “Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling.” <br>
+    ArXiv:[1412.3555](http://arxiv.org/abs/1412.3555)
+    (released: 11/12/2014)<br><br>
+[^5]:
+    `Data/Images/GRU_gate.jpg`: <br>
+    Agarap, Abien Fred (2017) “A Neural Network Architecture Combining Gated Recurrent Unit (GRU) and Support Vector Machine (SVM) for Intrusion Detection in Network Traffic Data,”
+    [ResearchGate](https://www.researchgate.net/publication/319642918_A_Neural_Network_Architecture_Combining_Gated_Recurrent_Unit_GRU_and_Support_Vector_Machine_SVM_for_Intrusion_Detection_in_Network_Traffic_Data)
+    (released: 01/10/2017)<br><br>
