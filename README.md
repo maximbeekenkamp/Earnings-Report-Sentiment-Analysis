@@ -12,7 +12,7 @@ So, perhaps there is an information advantage to be exploited by performing sent
 
 ## Use Guide
 
-This code was written in Python 3.11.4, and uses the following packages:
+This code was written using Python 3.11.4, and requires the following packages:
 
 - tensorflow
 - numpy
@@ -152,7 +152,7 @@ Where:
 A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the [LSTM](#lstm) and [GRU](#gru) networks.
 
 <p>
-    <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
+    <img align="center" src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
     <em> Diagram of RNNs.</em>
 </p>
 
@@ -177,7 +177,7 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 ```
 
 <p>
-    <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
+    <img align="center" src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
     <br>
     <em> Diagram of an LSTM Gate.</em>
 </p>
@@ -202,7 +202,7 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 ```
 
 <p>
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <img align="center" src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
     <br>
     <em> Diagram of a GRU Gate. </em>
 </p>
@@ -217,7 +217,7 @@ Source [^5]
 
 
 <p>
-    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
+    <img align="center" src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
     <br>
     <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
