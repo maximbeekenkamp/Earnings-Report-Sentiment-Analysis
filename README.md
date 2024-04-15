@@ -108,7 +108,7 @@ This projects includes three main methods of analysis:
 
 #### TF-IDF Embeddings
 
-A common technique for creating text embeddings is to use the Term Frequency-Inverse Document Frequency (TF-IDF) method. See the Maths Review section for more information on TF-IDF.
+A common technique for creating text embeddings is to use the Term Frequency-Inverse Document Frequency (TF-IDF) method. See the Maths Review section for more information on [TF-IDF](#tf-idf).
 
 ### Document Similarity Analysis
 
@@ -116,6 +116,8 @@ Once the textual content is represented using these embedding techniques, cosine
 
 
 ### Maths Review
+
+If you want to skip this click [here](#results).
 
 #### Classical Methods
 
@@ -137,7 +139,7 @@ Where:
 
 Cosine similarity is a metric used to determine how similar two vectors are. In this case, the vectors are the TF-IDF vectors of the prepared presentation and Q&A section of the earnings call for each company. Cosine similarity measures the cosine of the angle between two vectors projected in a multi-dimensional space. The formula for cosine similarity is as follows:
 ```math
- \text{cosine similarity} = \frac{\textbf{A} \cdot \textbf{B}}{\|\textbf{A}\| \times \|\textbf{B}\|}
+ \textsf{cosine similarity} = \frac{\textbf{A} \cdot \textbf{B}}{\|\textbf{A}\| \times \|\textbf{B}\|}
 ```
 
 Where:
@@ -147,13 +149,13 @@ Where:
 
 #### RNNs
 
-A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the LSTM and GRU networks.
+A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the [LSTM](#lstm) and [GRU](#gru) networks.
 
 <p>
-    <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/>
-    <em> Diagram of RNNs. [^2]</em>
+    <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
+    <em> Diagram of RNNs.</em>
 </p>
-
+[^2]
 
 ##### LSTM
 
@@ -175,9 +177,10 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 
 <p>
     <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
-    <em> Diagram of an LSTM Gate. [^3]</em>
+    <br>
+    <em> Diagram of an LSTM Gate.</em>
 </p>
-
+[^3]
 
 ##### GRU
 
@@ -198,9 +201,10 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 
 <p>
     <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
-    <em> Diagram of a GRU Gate. [^5]</em>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
 </p>
-
+[^5]
 
 ## Results
 
@@ -211,6 +215,7 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 
 <p>
     <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
     <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
 
