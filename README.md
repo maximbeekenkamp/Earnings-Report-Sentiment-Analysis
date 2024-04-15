@@ -151,8 +151,8 @@ Where:
 
 A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the [LSTM](#lstm) and [GRU](#gru) networks.
 
-<p>
-    <img align="center" src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
+<p align="center">
+    <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
     <em> Diagram of RNNs.</em>
 </p>
 
@@ -176,8 +176,8 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 \end{align*}
 ```
 
-<p>
-    <img align="center" src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
     <br>
     <em> Diagram of an LSTM Gate.</em>
 </p>
@@ -201,8 +201,8 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 \end{align*}
 ```
 
-<p>
-    <img align="center" src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
     <br>
     <em> Diagram of a GRU Gate. </em>
 </p>
@@ -216,8 +216,8 @@ Source [^5]
 **Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:**
 
 
-<p>
-    <img align="center" src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
     <br>
     <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
