@@ -119,10 +119,7 @@ Once the textual content is represented using these embedding techniques, cosine
 
 #### Classical Methods
 
-
-<details>
-<summary>TF-IDF</summary>
-#### TF-IDF
+##### TF-IDF
 
 Term Frequency-Inverse Document Frequency (TF-IDF) is a numerical statistic that is intended to reflect how important a word is to a document in a collection or corpus. It is often used as a weighting factor in information retrieval and text mining. The TF-IDF value increases proportionally to the number of times a word appears in the document and is offset by the number of documents in the corpus that contain the word, which helps to adjust for the fact that some words appear more frequently in general.
 
@@ -136,11 +133,7 @@ Where:
 - $N$ is the total number of documents in the corpus;
 - $df_i$ is the number of documents in the corpus that contain term $i$;
 
-</details>
-
-<details>
-<summary>Cosine Similarity</summary>
-#### Cosine Similarity
+##### Cosine Similarity
 
 Cosine similarity is a metric used to determine how similar two vectors are. In this case, the vectors are the TF-IDF vectors of the prepared presentation and Q&A section of the earnings call for each company. Cosine similarity measures the cosine of the angle between two vectors projected in a multi-dimensional space. The formula for cosine similarity is as follows:
 
@@ -149,8 +142,6 @@ $$ \text{cosine similarity} = \frac{\textbf{A} \cdot \textbf{B}}{\|\textbf{A}\| 
 Where:
 - $\textbf{A}$ is the TF-IDF matrix for the presentation;
 - $\textbf{B}$ is the TF-IDF matrix for the Q&A section;
-
-</details>
 
 
 #### RNNs
@@ -162,9 +153,8 @@ A Recurrent Neural Network (RNN) is a type of neural network that is designed to
     <em> Diagram of RNNs. [^2]</em>
 </p>
 
-<details>
-<summary>LSTM</summary>
-#### LSTM
+
+##### LSTM
 
 A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of an LSTM is as follows:
 
@@ -186,11 +176,8 @@ $$
     <em> Diagram of an LSTM Gate. [^3]</em>
 </p>
 
-</details>
 
-<details>
-<summary>GRU</summary>
-#### GRU
+##### GRU
 
 A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of a GRU is as follows:
 
@@ -211,7 +198,6 @@ $$
     <em> Diagram of a GRU Gate. [^5]</em>
 </p>
 
-</details>
 
 ## Results
 
