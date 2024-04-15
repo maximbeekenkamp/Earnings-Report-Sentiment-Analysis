@@ -136,8 +136,9 @@ Where:
 ##### Cosine Similarity
 
 Cosine similarity is a metric used to determine how similar two vectors are. In this case, the vectors are the TF-IDF vectors of the prepared presentation and Q&A section of the earnings call for each company. Cosine similarity measures the cosine of the angle between two vectors projected in a multi-dimensional space. The formula for cosine similarity is as follows:
-
-$$ \text{cosine similarity} = \frac{\textbf{A} \cdot \textbf{B}}{\|\textbf{A}\| \times \|\textbf{B}\|} $$
+```math
+ \text{cosine similarity} = \frac{\textbf{A} \cdot \textbf{B}}{\|\textbf{A}\| \times \|\textbf{B}\|}
+```
 
 Where:
 - $\textbf{A}$ is the TF-IDF matrix for the presentation;
@@ -149,7 +150,7 @@ Where:
 A Recurrent Neural Network (RNN) is a type of neural network that is designed to handle sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The two main types of RNNs are the LSTM and GRU networks.
 
 <p>
-    <img src="Data/Images/RNNs.jpg" alt="RNNs" style="max-width: 90%;"/>
+    <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/>
     <em> Diagram of RNNs. [^2]</em>
 </p>
 
@@ -160,7 +161,8 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 
 - $x_t$ is the current input at timestep $t$.
 - $h_{t-1}$ and $c_{t-1}$ are the previous hidden and cell states.
-$$
+
+```math
 \begin{align*}
     f_t &= \sigma \left( W_f x_t + U_f h_{t-1} + b_f \right) & \textsf{Forget Module} \\
     i_t &= \sigma \left( W_i x_t + U_i h_{t-1} + b_i \right) & \textsf{Remember Module}\\
@@ -169,7 +171,7 @@ $$
     o_t &= \sigma \left( W_o x_t + U_o h_{t-1} + b_o \right) & \textsf{Output Module}\\
     h_t &= o_t \odot \tanh(c_t)  & \textsf{Output, Hidden State Update}\\
 \end{align*}
-$$
+```
 
 <p>
     <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
@@ -184,17 +186,18 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 
 - $x_t$ is the current input at timestep $t$.
 - $h_{t-1}$ is the previous hidden state.
-$$
+
+```math
 \begin{align*}
     z_t &= \sigma \left( W_z x_t + U_z h_{t-1} + b_z \right) & \textsf{Update Gate Vector}\\
     r_t &= \sigma \left( W_r x_t + U_r h_{t-1} + b_r \right) & \textsf{Reset Gate Vector}\\
     \hat{h}_t &= \tanh \left( W_h x_t + r_t \odot ( U_h h_{t-1}) + b_h \right) & \textsf{Candidate Activation Vector}\\
     h_t &= z_t \odot h_{t-1} + (1 - z_t) \odot \hat{h}_t  & \textsf{Output, Hidden State Update}\\
 \end{align*}
-$$
+```
 
 <p>
-    <img src="Data/Images/GRU_gate.jpg" alt="GRU Gate" style="max-width: 90%;"/>
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
     <em> Diagram of a GRU Gate. [^5]</em>
 </p>
 
