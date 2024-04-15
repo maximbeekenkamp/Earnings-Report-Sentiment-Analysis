@@ -155,7 +155,8 @@ A Recurrent Neural Network (RNN) is a type of neural network that is designed to
     <img src="Data/Images/RNNs.png" alt="RNNs" style="max-width: 90%;"/> <br>
     <em> Diagram of RNNs.</em>
 </p>
-[^2]
+
+Source [^2]
 
 ##### LSTM
 
@@ -180,7 +181,8 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
     <br>
     <em> Diagram of an LSTM Gate.</em>
 </p>
-[^3]
+
+Source [^3]
 
 ##### GRU
 
@@ -204,7 +206,8 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
     <br>
     <em> Diagram of a GRU Gate. </em>
 </p>
-[^5]
+
+Source [^5]
 
 ## Results
 
