@@ -1,4 +1,8 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
+import tensorflow as tf
+
+from transformer import Decoder, Encoder
+from autoencoder import VAE
 
 class Tokens:
     def __init__(self, corpus, company):
@@ -19,7 +23,7 @@ class Tokens:
             }
 
 class Embeddings:
-    def __init__(self, pres_df, qa_df):
+    def __init__(self, pres_df, qa_df, training_params):
         """
         Class to create embeddings for the Presentation and QA
         sections of a company's report.
@@ -29,10 +33,12 @@ class Embeddings:
             of words from the presentation section.
             qa_df (df): df containing a list of question answer tuples containing
             lists of words from the Q&A section.
+            training_params (dict): dictionary containing the training parameters.
         """
         self.pres_list = list(pres_df)
         self.qa_list = list(qa_df)
         self.tfidf_dict = {}
+        self.training_params = training_params
 
     def embedding_matrix(self, company, mode):
         """
@@ -51,8 +57,12 @@ class Embeddings:
         for i, pres in enumerate(self.pres_list):
             if mode == "tfidf":
                 self.tfidf(company, pres, self.qa_list[i], i)
-            elif mode == "doc2vec":
-                self.doc2vec(company, pres, self.qa_list[i], i)
+            elif mode == "lstm":
+                self.lstm_embed(company, pres, self.qa_list[i], i)
+            elif mode == "gru":
+                self.gru_embed(company, pres, self.qa_list[i], i)
+            elif mode == "sa":
+                self.sa_embed(company, pres, self.qa_list[i], i, self.training_params)
             else:
                 raise ValueError("Invalid mode. Please choose 'tfidf' or 'doc2vec'.")
 
@@ -103,7 +113,80 @@ class Embeddings:
                 output_msg += f"\n QUES: {ques} \n ANS: {ans}"
             raise ValueError(f"{output_msg}")
 
-    def doc2vec(self, company, pres, qa, i):
+    def lstm_embed(self, company, pres, qa, i):
         pass
 
+    def gru_embed(self, company, pres, qa, i):
+        pass
+
+    def sa_embed(self, company, pres, qa, i, training_vars):
+        # Define your transformer parameters
+        # embedding_size = 128
+        # num_heads = 8
+        # input_sequence_length = 100
+        # output_sequence_length = 100
+
+        # training_vars = {
+        #     'num_heads': num_heads,
+        #     'embedding_size': embedding_size,
+        #     'input_sequence_length': input_sequence_length,
+        #     'output_sequence_length': output_sequence_length,
+        # }
+        # Create your transformer model
+        encoder = Encoder(training_vars)
+        decoder = Decoder(training_vars)
+
+        # latent_dim = 64
+
+        # # Create your autoencoder model
+        encoder_layers = tf.keras.Sequential([
+            encoder,
+            tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"),
+        ])
+        decoder_layers = tf.keras.Sequential([
+            tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"),
+            decoder,
+        ])
+        mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+        logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+        autoencoder = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
         
+        autoencoder.compile(
+            optimizer= tf.keras.optimizers.Adam(training_vars["learning_rate"]),
+            rec_loss=self.rec_loss, 
+            kld_loss=self.kld_loss, 
+            metrics= [
+                tf.keras.metrics.MeanSquaredError(),
+                tf.keras.metrics.BinaryCrossentropy()
+                ]
+        )
+
+        # Generate some sample tokenized data (replace this with your actual data loading process)
+        # Assuming tokenized_data is a numpy array of shape (num_samples, max_seq_length, embedding_size)
+        num_samples = 1000
+        max_seq_length = 100
+        embedding_size = 128
+        tokenized_data = np.random.rand(num_samples, max_seq_length, embedding_size)
+
+        # Train the autoencoder
+        autoencoder.fit((tokenized_data, None), tokenized_data, epochs=10, batch_size=32)
+
+        # Train the transformer model using the autoencoder
+        transformer_model.fit(tokenized_data, autoencoder.encoder.predict(tokenized_data), epochs=10, batch_size=32)
+
+
+    def kld_loss(self, mu, logvar):
+        """
+        Computes the Kullback-Leibler divergence loss.
+
+        Args:
+            mu (tf.Tensor): Mean of the latent space.
+            logvar (tf.Tensor): Log variance of the latent space.
+
+        Returns:
+            tf.Tensor: The Kullback-Leibler divergence loss.
+        """
+        return 0.5 * tf.reduce_sum(-logvar + (mu ** 2) -1 + tf.exp(logvar), axis=1)
+    
+    def rec_loss(self, x_true, x_pred):
+        return tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred), axis=(1, 2))

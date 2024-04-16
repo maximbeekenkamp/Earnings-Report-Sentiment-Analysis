@@ -1,14 +1,6 @@
 import tensorflow as tf
 
 
-class LM:
-    def __init__(self):
-        pass
-
-    def RNN(self):
-        pass
-
-
 class MyLSTM(tf.keras.layers.Layer):
     def __init__(self, units, **kwargs):
         self.units = units

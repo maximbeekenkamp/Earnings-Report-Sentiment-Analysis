@@ -18,6 +18,7 @@ class DataSet:
 
         Args:
             directory (str, optional): _description_. Defaults to "Data/Dataset/Transcripts/".
+            singleCompany (str, optional): The ticker symbol for that company. Defaults to False.
         """
         self.directory = directory
         self.data_list = []

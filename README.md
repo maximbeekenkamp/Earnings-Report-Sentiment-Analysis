@@ -110,6 +110,14 @@ This projects includes three main methods of analysis:
 
 A common technique for creating text embeddings is to use the Term Frequency-Inverse Document Frequency (TF-IDF) method. See the Maths Review section for more information on [TF-IDF](#tf-idf).
 
+#### Contextual Embeddings
+
+By utilising [RNN layers](#rnns), [self-attention mechanisms](#self-attention-mechanism), contextual embeddings can be created. These embeddings represent not only the word itself but also the context in which it appears.
+
+In order to train these contextual embeddings we need something that constitutes a label. Given that the earnings call is just text and don't have labels we have two options:
+1. We can ask the model to predict the next token in a sequence given the previous tokens. Although this is a common approach, our dataset is quite small and this approach would likely lead to overfitting.
+2. [Autoencoders](#autoencoders). Autoencoders ask the model to encode, and then decode the input data, with the difference between the input and output being the loss function. Given the small dataset, this approach is likely to be more successful.
+
 ### Document Similarity Analysis
 
 Once the textual content is represented using these embedding techniques, cosine similarity is calculated between corresponding segments of the presentation and the Q&A section. Specifically, for a given question answer pair, I take the section (paragraph) of the presentation which is most similar to the question, and then calculate the cosine similarity between that paragraph and the question's answer.
@@ -127,7 +135,7 @@ Term Frequency-Inverse Document Frequency (TF-IDF) is a numerical statistic that
 
 The formula for TF-IDF is as follows:
 
-$$ w_{i,j} = tf_{i,j} \times log(\frac{N}{df_i}) $$
+$$ w_{i,j} = tf_{i,j} \cdot log(\frac{N}{df_i}) $$
 
 Where:
 - $w_{i,j}$ is the TF-IDF weight of term $i$ in document $j$;
@@ -156,11 +164,19 @@ A Recurrent Neural Network (RNN) is a type of neural network that is designed to
     <em> Diagram of RNNs.</em>
 </p>
 
-Source [^2]
+Image Source [^2]
 
 ##### LSTM
 
-A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of an LSTM is as follows:
+A Long Short-Term Memory (LSTM)[^6] network is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of an LSTM is as follows:
+
+<p align="center">
+    <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of an LSTM Gate.</em>
+</p>
+
+Image Source [^3]
 
 - $x_t$ is the current input at timestep $t$.
 - $h_{t-1}$ and $c_{t-1}$ are the previous hidden and cell states.
@@ -176,13 +192,13 @@ A Long Short-Term Memory (LSTM) network is a type of RNN that is designed to han
 \end{align*}
 ```
 
-<p align="center">
-    <img src="Data/Images/LSTM_gate.jpg" alt="LSTM Gate" style="max-width: 90%;"/>
-    <br>
-    <em> Diagram of an LSTM Gate.</em>
-</p>
-
-Source [^3]
+Where:
+- A \textsf{Forget Module} allows the LSTM to keep or forget information from the previous hidden state.
+- A \textsf{Remember Module} decides which values to update in the cell state.
+- A \textsf{New Memory} creates a vector of new candidate values that could be added to the cell state.
+- A \textsf{Cell State Update} module updates the cell state.
+- An \textsf{Output Module} creates the output.
+- An \textsf{Output, Hidden State Update} module updates the hidden state.
 
 ##### GRU
 
@@ -207,7 +223,114 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
     <em> Diagram of a GRU Gate. </em>
 </p>
 
-Source [^5]
+Image Source [^5]
+
+#### Transformer Models
+
+##### Self-Attention Mechanism
+
+The self-attention mechanism is a key component of transformer models. It allows the model to weigh the importance of different words in a sentence when making predictions. The self-attention mechanism works by calculating a score for each word in the sentence based on its relationship with the other words in the sentence. These scores are then used to calculate a weighted sum of the word embeddings, which is used as the input to the next layer of the model. The basic structure of the self-attention mechanism is as follows:
+
+```math
+\begin{align*}
+    \textsf{Attention}(Q, K, V) &= \textsf{softmax} \left( \frac{QK^T}{\sqrt{d_k}} \right) V
+\end{align*}
+```
+
+Where:
+- $Q$ is the query matrix;
+- $K$ is the key matrix;
+- $V$ is the value matrix;
+- $d_k$ is the dimension of the key matrix.
+
+<!-- <p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
+</p> -->
+
+<!-- Image Source [^5] -->
+
+##### Multi-Head Attention
+
+Multi-head attention is a variant of the self-attention mechanism that allows the model to focus on different parts of the input sequence simultaneously. It works by splitting the query, key, and value matrices into multiple heads, calculating the attention scores for each head, and then concatenating the results. The basic structure of multi-head attention is as follows:
+
+```math
+\begin{align*}
+    \textsf{MultiHead}(Q, K, V) &= \textsf{Concat}(\textsf{head}_1, \ldots, \textsf{head}_h) W^O \\
+    \textsf{head}_i &= \textsf{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+\end{align*}
+```
+
+Where:
+- $QW_i^Q$, $KW_i^K$, and $VW_i^V$ are the query, key, and value matrices for head $i$;
+- $W^O$ is the output weight matrix.
+
+<!-- <p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
+</p> -->
+
+<!-- Image Source [^5] -->
+
+#### Autoencoders
+
+Autoencoders are a type of neural network that are used for unsupervised learning tasks. They work by an encoder network that maps the input data into a latent space representation and a decoder network that reconstructs the input data from this representation. The main objective of an autoencoder is to learn a compressed, distributed encoding of the input data such that the reconstruction from this representation is as close to the original input as possible. The basic structure of an autoencoder is as follows:
+
+```math
+\begin{align*}
+    \textsf{Encoder}(x) &= \sigma(Wx + b) \\
+    \textsf{Decoder}(z) &= \sigma(W'z + b')
+\end{align*}
+```
+
+Where:
+- $x$ is the input data;
+- $z$ is the encoded representation of the input data;
+- $W$ and $W'$ are the weight matrices;
+- $b$ and $b'$ are the bias vectors.
+
+<!-- <p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
+</p> -->
+
+<!-- Image Source [^5] -->
+
+##### Variational Autoencoders
+
+Variational Autoencoders (VAEs) extend the basic autoencoder by incorporating probabilistic modeling into the encoding process. Instead of directly encoding the input data into a fixed representation, VAE learns to encode the input data into a probability distribution in the latent space.
+
+VAE imposes a constraint on the distribution of the latent variables to follow a predefined distribution, typically a Gaussian distribution. This constraint encourages the latent space to have certain desirable properties, such as smoothness and continuity.
+
+During training, VAE aims to maximise the likelihood of generating the input data under the learned distribution in the latent space while simultaneously minimising the difference between the generated data and the original input data.
+
+The basic structure of a VAE is as follows:
+
+```math
+\begin{align*}
+    \textsf{Encoder}(x) &= \mu, \sigma = \textsf{NN}(x) \\
+    z &\sim \mathcal{N}(\mu, \sigma) \\
+    \textsf{Decoder}(z) &= \textsf{NN}(z)
+\end{align*}
+```
+
+Where:
+- $\mu$ and $\sigma$ are the mean and standard deviation of the latent distribution;
+- $z$ is the latent variable sampled from the distribution;
+- $\mathcal{N}(\mu, \sigma)$ is the Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
+
+<!-- <p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
+</p> -->
+
+<!-- Image Source [^5] -->
+
+
 
 ## Results
 
@@ -271,3 +394,8 @@ Currently, there are two known issues with the code:
     Agarap, Abien Fred (2017) “A Neural Network Architecture Combining Gated Recurrent Unit (GRU) and Support Vector Machine (SVM) for Intrusion Detection in Network Traffic Data,”
     [ResearchGate](https://www.researchgate.net/publication/319642918_A_Neural_Network_Architecture_Combining_Gated_Recurrent_Unit_GRU_and_Support_Vector_Machine_SVM_for_Intrusion_Detection_in_Network_Traffic_Data)
     (released: 01/10/2017)<br><br>
+[^6]:
+    Hochreiter, Sepp and J{\"u}rgen Schmidhuber (1997) “Long short-term memory,” Neural computation, 9 (8), 1735–1780
+    [Paper](http://www.bioinf.jku.at/publications/older/2604.pdf)
+    (released: 1997)<br><br>
+
