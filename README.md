@@ -193,16 +193,16 @@ A Long Short-Term Memory (LSTM)[^6] network is a type of RNN that is designed to
 Image Source [^3]
 
 - $x_t$ is the current input at timestep $t$.
-- $h_{t-1}$ and $c_{t-1}$ are the previous hidden and cell states.
+- $h_{t-1}$ and $C_{t-1}$ are the previous hidden and cell states.
 
 ```math
 \begin{align*}
     f_t &= \sigma \left( W_f x_t + U_f h_{t-1} + b_f \right) & \textsf{Forget Module} \\
     i_t &= \sigma \left( W_i x_t + U_i h_{t-1} + b_i \right) & \textsf{Remember Module}\\
-    \tilde{c}_t &= \tanh \left( W_c x_t + U_c h_{t-1} + b_c \right) & \textsf{New Memory}\\
-    c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t  & \textsf{Cell State Update}\\
+    \tilde{C}_t &= \tanh \left( W_c x_t + U_c h_{t-1} + b_c \right) & \textsf{New Memory}\\
+    C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t  & \textsf{Cell State Update}\\
     o_t &= \sigma \left( W_o x_t + U_o h_{t-1} + b_o \right) & \textsf{Output Module}\\
-    h_t &= o_t \odot \tanh(c_t)  & \textsf{Output, Hidden State Update}\\
+    h_t &= o_t \odot \tanh(C_t)  & \textsf{Output, Hidden State Update}\\
 \end{align*}
 ```
 
@@ -290,7 +290,7 @@ Where:
 
 And:
 ```math
-W_iQ \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iK \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iV \in \mathbb{R}^{d_{\text{model}} \times d_v}, \quad \text{and} \quad W_O \in \mathbb{R}^{h \times d_v \times d_{\text{model}}}.
+W_iQ \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iK \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iV \in \mathbb{R}^{d_{\text{model}} \times d_v}, \quad \textsf{and} \quad W_O \in \mathbb{R}^{h \times d_v \times d_{\text{model}}}.
 ```
 
 <p align="center">
