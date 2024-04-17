@@ -258,7 +258,7 @@ Where:
 - $d_k$ is the dimension of the key matrix.
 
 <p align="center">
-    <img src="Data/Images/Attention_diagram.jpg" alt="Scaled Dot-Product Attention" style="max-width: 90%;"/>
+    <img src="Data/Images/Attention_diagram.jpg" alt="Scaled Dot-Product Attention" style="max-width: 40%;"/>
     <br>
     <em> Scaled Dot-Product Attention. </em>
 </p>
@@ -270,7 +270,7 @@ Image Source [^7]
 Multi-head attention is a variant of the self-attention mechanism that allows the model to focus on different parts of the input sequence simultaneously. It works by splitting the query, key, and value matrices into multiple heads, calculating the attention scores for each head, and then concatenating the results. The basic structure of multi-head attention is as follows:
 
 <p align="center">
-    <img src="Data/Images/Multiheaded_Attention_diagram.jpg" alt="Multiheaded Attention" style="max-width: 90%;"/>
+    <img src="Data/Images/Multiheaded_Attention_diagram.jpg" alt="Multiheaded Attention" style="max-width: 40%;"/>
     <br>
     <em> Multi-Head Attention consists of several attention layers running in parallel. </em>
 </p>
@@ -289,7 +289,7 @@ Where:
 - $W^O$ is the output weight matrix.
 
 <p align="center">
-    <img src="Data/Images/Transformer_diagram.jpg" alt="Transformer Architecture" style="max-width: 90%;"/>
+    <img src="Data/Images/Transformer_diagram.jpg" alt="Transformer Architecture" style="max-width: 40%;"/>
     <br>
     <em> Transformer model architecture. </em>
 </p>
