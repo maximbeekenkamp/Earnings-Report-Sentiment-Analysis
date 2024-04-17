@@ -266,7 +266,9 @@ class DataSet:
             pres_unique_words = set()
             for para in df["Presentation"]:
                 assert isinstance(para, list), "Presentation has no paragraphs."
-                pres_unique_words.update(set([word for sublist in para for word in sublist]))
+                pres_unique_words.update(
+                    set([word for sublist in para for word in sublist])
+                )
 
             qa_unique_words = set()
             for qa in df["QA"]:
@@ -281,7 +283,7 @@ class DataSet:
             }
             vocab[company]["QA"] = {w: i for i, w in enumerate(qa_unique_words)}
         return vocab
-    
+
     def make_vocab_total(self):
         """
         Creates a dictionary which has each word for all companies.
@@ -297,19 +299,20 @@ class DataSet:
             all_unique_words = set()
             for para in df["Presentation"]:
                 assert isinstance(para, list), "Presentation has no paragraphs."
-                all_unique_words.update(set([word for sublist in para for word in sublist]))
-                
+                all_unique_words.update(
+                    set([word for sublist in para for word in sublist])
+                )
+
             for qa in df["QA"]:
                 assert isinstance(qa, list), "QA has no questions."
                 questions = set([word for sublist in qa for word in sublist[0]])
                 answers = set([word for sublist in qa for word in sublist[1]])
                 all_unique_words.update(questions)
                 all_unique_words.update(answers)
-                
-            vocab[company] = {word: i for i, word in enumerate(all_unique_words)}
-            
-        return vocab
 
+            vocab[company] = {word: i for i, word in enumerate(all_unique_words)}
+
+        return vocab
 
     def split_data(self):
         """

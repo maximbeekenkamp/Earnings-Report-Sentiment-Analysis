@@ -3,10 +3,23 @@ import tensorflow as tf
 
 class MyLSTM(tf.keras.layers.Layer):
     def __init__(self, units, **kwargs):
+        """
+        Custom LSTM layer.
+
+        Args:
+            units (int): Dimensionality of the output space.
+            (embedding_size)
+        """
         self.units = units
         super(MyLSTM, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        """
+        Builds the custom LSTM layer.
+
+        Args:
+            input_shape (TensorShape): Shape of the input tensor.
+        """
         kernel_shape = tf.TensorShape((input_shape[-1], 4 * self.units))
 
         self.kernel = self.add_weight(
@@ -34,6 +47,18 @@ class MyLSTM(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, initial_state=None):
+        """
+        Computes the output of the layer.
+
+        Args:
+            inputs (tf.Tensor): Input tensor.
+            initial_state (tuple, optional): Initial state fo the cell.
+            Defaults to None.
+
+        Returns:
+            tuple: Tuple containing the output tensor, the final hidden state,
+            and the final cell state.
+        """
         if initial_state:
             ht, ct = tf.identity(initial_state[0]), tf.identity(initial_state[1])
         else:
@@ -80,11 +105,26 @@ class MyLSTM(tf.keras.layers.Layer):
         return outputs, ht, ct
 
     def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+
+        Args:
+            input_shape (TensorShape): Shape of the input tensor.
+
+        Returns:
+            TensorShape: Shape of the output tensor.
+        """
         shape = tf.TensorShape(input_shape).as_list()
         shape[-1] = self.units
         return tf.TensorShape(shape)
 
     def get_config(self):
+        """
+        Gets the configuration of the layer.
+
+        Returns:
+            dict: Configuration dictionary of the layer.
+        """
         base_config = super(MyLSTM, self).get_config()
         base_config["units"] = self.units
         return base_config
@@ -92,10 +132,22 @@ class MyLSTM(tf.keras.layers.Layer):
 
 class MyGRU(tf.keras.layers.Layer):
     def __init__(self, units, **kwargs):
+        """
+        Custom GRU layer.
+
+        Args:
+            units (int): Dimensionality of the output space.
+        """
         self.units = units
         super(MyGRU, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        """
+        Builds the custom GRU layer.
+
+        Args:
+            input_shape (TensorShape): Shape of the input tensor.
+        """
         kernel_shape = tf.TensorShape((input_shape[-1], 3 * self.units))
 
         self.kernel = self.add_weight(
@@ -125,6 +177,17 @@ class MyGRU(tf.keras.layers.Layer):
         super(MyGRU, self).build(input_shape)
 
     def call(self, inputs, initial_state=None):
+        """
+        Computes the output of the layer.
+
+        Args:
+            inputs (tf.Tensor): Input tensor.
+            initial_state (tf.Tensor, optional): Initial state of the cell.
+            Defaults to None.
+
+        Returns:
+            tuple: Tuple containing the output tensor and the final hidden state.
+        """
         ## Hidden state
         if initial_state is None:
             ht = tf.zeros(shape=(inputs.shape[0], self.units), dtype=tf.float32)
@@ -158,11 +221,26 @@ class MyGRU(tf.keras.layers.Layer):
         return outputs, ht
 
     def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+
+        Args:
+            input_shape (TensorShape): Shape of the input tensor.
+
+        Returns:
+            TensorShape: Shape of the output tensor.
+        """
         shape = tf.TensorShape(input_shape).as_list()
         shape[-1] = self.units
         return tf.TensorShape(shape)
 
     def get_config(self):
+        """
+        Gets the configuration of the layer.
+
+        Returns:
+            dict: Configuration dictionary of the layer.
+        """
         base_config = super(MyGRU, self).get_config()
         base_config["units"] = self.units
         return base_config

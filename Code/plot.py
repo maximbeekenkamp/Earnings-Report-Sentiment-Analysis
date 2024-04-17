@@ -81,8 +81,8 @@ class Plotter:
     def plot_report_similarity_line(self, sim_dict, test=True, singleCompany=False):
         """
         Plots the similarity scores for one or multiple companies over the 16 reports.
-        Although more informative, this plot can be difficult to read when plotting for 
-        multiple companies. Therefore, it is recommended to use the bar chart plot instead, 
+        Although more informative, this plot can be difficult to read when plotting for
+        multiple companies. Therefore, it is recommended to use the bar chart plot instead,
         and only use this plot when plotting for a single company.
 
         Args:
@@ -152,7 +152,7 @@ class Plotter:
     def plot_report_similarity_bar(self, sim_dict, test=True, singleCompany=False):
         """
         Plots the similarity scores for one or multiple companies over the 16 reports.
-        Formats the plot as a bar chart, this is easier to read when plotting for 
+        Formats the plot as a bar chart, this is easier to read when plotting for
         multiple companies.
 
         Args:

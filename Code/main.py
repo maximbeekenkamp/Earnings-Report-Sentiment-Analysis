@@ -1,5 +1,4 @@
 import argparse
-import re
 import sys
 
 from model_run import Runner
@@ -14,6 +13,7 @@ def main(embedding_type, singleCompany=False):
 
     network = Runner(singleCompany)
     network.run(embedding_type, training_vars, singleCompany)
+
 
 def parse_args():
     """
@@ -37,6 +37,7 @@ def parse_args():
 
     return parser.parse_args()
 
+
 if __name__ == "__main__":
     args = parse_args()
     try:
@@ -56,4 +57,3 @@ if __name__ == "__main__":
     except KeyError:
         print("Input error, Company not recognised.")
         sys.exit(1)
-

@@ -1,4 +1,3 @@
-import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import tensorflow as tf
 
@@ -99,18 +98,14 @@ class Embeddings:
                 company_tokens.word_to_token_dict[word] for word in train_data
             ]
             val_data = [company_tokens.word_to_token_dict[word] for word in val_data]
+
+            func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
             if mode == "lstm":
-                self.lstm_embed(
-                    company, self.training_vars, pres_list, qa_list, train_data, val_data
-                )
+                self.lstm_embed(*func_inputs)
             elif mode == "gru":
-                self.gru_embed(
-                    company, self.training_vars, pres_list, qa_list, train_data, val_data
-                )
+                self.gru_embed(*func_inputs)
             elif mode == "sa":
-                self.sa_embed(
-                    company, self.training_vars, pres_list, qa_list, train_data, val_data
-                )
+                self.sa_embed(*func_inputs)
             else:
                 raise ValueError(
                     "Invalid mode. Please choose 'tfidf', 'lstm', 'gru', or 'sa'."
@@ -240,9 +235,7 @@ class Embeddings:
             company, pres_list, qa_list, self.lstm_dict, self.lstm_decode_dict, vae
         )
 
-    def gru_embed(
-        self, company, training_vars, pres_list, qa_list, train_data, val_data
-    ):
+    def gru_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
         """
         Creates the contextualised embeddings for the Presentation and QA sections using the
         GRU model.
@@ -317,9 +310,7 @@ class Embeddings:
             company, pres_list, qa_list, self.gru_dict, self.gru_decode_dict, vae
         )
 
-    def sa_embed(
-        self, company, training_vars, pres_list, qa_list, train_data, val_data
-    ):
+    def sa_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
         """
         Creates the contextualised embeddings for the Presentation and QA sections using the
         transformer model.
@@ -397,9 +388,7 @@ class Embeddings:
             company, pres_list, qa_list, self.sa_dict, self.sa_decode_dict, vae
         )
 
-    def context_embed(
-        self, company, pres_list, qa_list, embedding_dict, reconstruction_dict, vae
-    ):
+    def context_embed(self, company, pres_list, qa_list, embedding_dict, reconstruction_dict, vae):
         """
         Stores the embeddings and reconstructions for the entire dataset.
 

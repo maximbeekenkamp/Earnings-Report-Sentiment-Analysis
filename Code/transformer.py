@@ -51,7 +51,7 @@ class AttentionMatrix(tf.keras.layers.Layer):
 class AttentionHead(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, is_self_attention=True, **kwargs):
         """
-        Class to compute the attention head. Initialises the weights matrices for 
+        Class to compute the attention head. Initialises the weights matrices for
         the keys, values, and queries.
 
         Args:
@@ -81,7 +81,7 @@ class AttentionHead(tf.keras.layers.Layer):
         Runs a single attention head.
 
         Args:
-            inputs_for_keys (tf.Tensor): Input tensor for keys. 
+            inputs_for_keys (tf.Tensor): Input tensor for keys.
             Shape: [batch_size x window_size_keys x embedding_size]
             inputs_for_values (tf.Tensor): Input tensor for values.
             Shape: [batch_size x window_size_keys x embedding_size]
@@ -89,7 +89,7 @@ class AttentionHead(tf.keras.layers.Layer):
             Shape: [batch_size x window_size_queries x embedding_size]
 
         Returns:
-            tf.Tensor: Attention head. 
+            tf.Tensor: Attention head.
             Shape: [batch_size x window_size_queries x output_size]
         """
         K = tf.tensordot(inputs_for_keys, self.K, 1)
@@ -97,6 +97,7 @@ class AttentionHead(tf.keras.layers.Layer):
         Q = tf.tensordot(inputs_for_queries, self.Q, 1)
 
         return tf.matmul(self.attention_mat((K, Q)), V)
+
 
 class MultiHeadedAttention(tf.keras.layers.Layer):
     def __init__(self, emb_sz, num_heads, use_mask=True, **kwargs):
@@ -147,6 +148,7 @@ class MultiHeadedAttention(tf.keras.layers.Layer):
         concat_attention = tf.concat(attention_heads_output, axis=-1)
         return self.linear(concat_attention)
 
+
 class TransformerBlock(tf.keras.layers.Layer):
     def __init__(self, emb_sz, num_heads=1, **kwargs):
         """
@@ -164,18 +166,15 @@ class TransformerBlock(tf.keras.layers.Layer):
 
         if num_heads == 1:
             self.self_atten = AttentionHead(emb_sz, emb_sz)
-            self.self_context_atten = AttentionHead(emb_sz, emb_sz, False) 
+            self.self_context_atten = AttentionHead(emb_sz, emb_sz, False)
 
         else:
             self.multi_atten = MultiHeadedAttention(emb_sz, num_heads)
             self.self_context_atten_multi = MultiHeadedAttention(emb_sz, num_heads, False)
 
-        
-
         self.layer_norm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layer_norm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layer_norm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
-        
 
     @tf.function
     def call(self, inputs, decode_bool):
@@ -187,7 +186,7 @@ class TransformerBlock(tf.keras.layers.Layer):
         Args:
             inputs (tf.Tensor): Input tensor.
             Shape: [batch_size x input_seq_length x embedding_size]
-            decode_bool (bool): Boolean to determine whether to apply 
+            decode_bool (bool): Boolean to determine whether to apply
             self-attention or not.
 
         Returns:
@@ -205,10 +204,11 @@ class TransformerBlock(tf.keras.layers.Layer):
         else:
             un_masked_attention = self.self_context_atten_multi(out1, out1, out1)
         out2 = self.layer_norm2(out1 + un_masked_attention)
-            
+
         ffout = self.ff_layer(out2)
         out3 = self.layer_norm2(out2 + ffout)
         return out3
+
 
 class PositionalEncoding(tf.keras.layers.Layer):
     def __init__(self, max_seq_len, embed_size):
@@ -255,6 +255,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
         pos_encoding = np.concatenate([np.sin(angle_rads), np.cos(angle_rads)], axis=-1)
         return tf.cast(pos_encoding, dtype=tf.float32)
 
+
 class SA_Encoder:
     def __init__(self, training_vars):
         """
@@ -282,6 +283,7 @@ class SA_Encoder:
         for _ in range(self.num_layers):
             x = self.transformer(x, False)
         return x
+
 
 class SA_Decoder:
     def __init__(self, training_vars):
