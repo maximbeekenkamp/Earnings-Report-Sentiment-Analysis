@@ -243,7 +243,7 @@ Image Source [^5]
 
 ##### Self-Attention Mechanism
 
-The self-attention mechanism is a key component of transformer models. It allows the model to weigh the importance of different words in a sentence when making predictions. The self-attention mechanism works by calculating a score for each word in the sentence based on its relationship with the other words in the sentence. These scores are then used to calculate a weighted sum of the word embeddings, which is used as the input to the next layer of the model. The basic structure of the self-attention mechanism is as follows:
+The self-attention mechanism is a key component of transformer models. [^7] It allows the model to weigh the importance of different words in a sentence when making predictions. The self-attention mechanism works by calculating a score for each word in the sentence based on its relationship with the other words in the sentence. These scores are then used to calculate a weighted sum of the word embeddings, which is used as the input to the next layer of the model. The basic structure of the self-attention mechanism is as follows:
 
 ```math
 \begin{align*}
@@ -257,17 +257,25 @@ Where:
 - $V$ is the value matrix;
 - $d_k$ is the dimension of the key matrix.
 
-<!-- <p align="center">
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/Attention_diagram.jpg" alt="Scaled Dot-Product Attention" style="max-width: 90%;"/>
     <br>
-    <em> Diagram of a GRU Gate. </em>
-</p> -->
+    <em> Scaled Dot-Product Attention. </em>
+</p>
 
-<!-- Image Source [^5] -->
+Image Source [^7]
 
 ##### Multi-Head Attention
 
 Multi-head attention is a variant of the self-attention mechanism that allows the model to focus on different parts of the input sequence simultaneously. It works by splitting the query, key, and value matrices into multiple heads, calculating the attention scores for each head, and then concatenating the results. The basic structure of multi-head attention is as follows:
+
+<p align="center">
+    <img src="Data/Images/Multiheaded_Attention_diagram.jpg" alt="Multiheaded Attention" style="max-width: 90%;"/>
+    <br>
+    <em> Multi-Head Attention consists of several attention layers running in parallel. </em>
+</p>
+
+Image Source [^7]
 
 ```math
 \begin{align*}
@@ -280,13 +288,13 @@ Where:
 - $QW_i^Q$, $KW_i^K$, and $VW_i^V$ are the query, key, and value matrices for head $i$;
 - $W^O$ is the output weight matrix.
 
-<!-- <p align="center">
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/Transformer_diagram.jpg" alt="Transformer Architecture" style="max-width: 90%;"/>
     <br>
-    <em> Diagram of a GRU Gate. </em>
-</p> -->
+    <em> Transformer model architecture. </em>
+</p>
 
-<!-- Image Source [^5] -->
+Image Source [^7]
 
 #### Autoencoders
 
@@ -305,13 +313,13 @@ Where:
 - $W$ and $W'$ are the weight matrices;
 - $b$ and $b'$ are the bias vectors.
 
-<!-- <p align="center">
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/Autoencoder_structure.png" alt="Autoencoder structure" style="max-width: 90%;"/>
     <br>
-    <em> Diagram of a GRU Gate. </em>
-</p> -->
+    <em> Schematic structure of an autoencoder with 3 fully connected hidden layers. The code (z, or h for reference in the text) is the most internal layer. </em>
+</p> 
 
-<!-- Image Source [^5] -->
+Image Source [^8]
 
 ##### Variational Autoencoders
 
@@ -336,13 +344,13 @@ Where:
 - $z$ is the latent variable sampled from the distribution;
 - $\mathcal{N}(\mu, \sigma)$ is the Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
 
-<!-- <p align="center">
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+<p align="center">
+    <img src="Data/Images/VAE_Basic.png" alt="VAE" style="max-width: 90%;"/>
     <br>
-    <em> Diagram of a GRU Gate. </em>
-</p> -->
+    <em> The basic scheme of a variational autoencoder. </em>
+</p>
 
-<!-- Image Source [^5] -->
+Image Source [^9]
 
 
 
@@ -413,3 +421,13 @@ Currently, there are two known issues with the code:
     [Paper](http://www.bioinf.jku.at/publications/older/2604.pdf)
     (released: 1997)<br><br>
 
+[^7]:
+    Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin (2017) “Attention Is All You Need,” CoRR,abs/1706.03762
+    ArXiv:[1706.03762](http://arxiv.org/abs/1706.03762)
+    (released: 12/06/2017)<br><br>
+
+[^8]:
+    By Chervinskii - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=45555552 <br><br>
+
+[^9]:
+    By EugenioTL - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=107231101 <br><br>
