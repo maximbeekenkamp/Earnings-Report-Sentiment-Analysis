@@ -422,12 +422,15 @@ Currently, there are two known issues with the code:
     (released: 1997)<br><br>
 
 [^7]:
+    `Data/Images/Attention_diagram.jpg`, `Data/Images/Multiheaded_Attention_diagram.jpg`, `Data/Images/Transformer_diagram.jpg`: <br>
     Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin (2017) “Attention Is All You Need,” CoRR,abs/1706.03762
     ArXiv:[1706.03762](http://arxiv.org/abs/1706.03762)
     (released: 12/06/2017)<br><br>
 
 [^8]:
+    `Data/Images/Autoencoder_structure.png`: <br>
     By Chervinskii - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=45555552 <br><br>
 
 [^9]:
+    `Data/Images/VAE_Basic.png`: <br>
     By EugenioTL - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=107231101 <br><br>
