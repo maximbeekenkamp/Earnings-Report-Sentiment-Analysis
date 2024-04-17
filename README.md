@@ -218,6 +218,13 @@ Where:
 
 A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle long-term dependencies in sequential data. It is particularly useful for natural language processing tasks, as it can remember information from previous time steps and use it to make predictions at the current time step. The basic structure of a GRU is as follows:
 
+<p align="center">
+    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
+    <br>
+    <em> Diagram of a GRU Gate. </em>
+</p>
+
+Image Source [^5]
 
 - $x_t$ is the current input at timestep $t$.
 - $h_{t-1}$ is the previous hidden state.
@@ -231,19 +238,20 @@ A Gated Recurrent Unit (GRU) [^4] is a type of RNN that is designed to handle lo
 \end{align*}
 ```
 
-<p align="center">
-    <img src="Data/Images/GRU_gate.png" alt="GRU Gate" style="max-width: 90%;"/>
-    <br>
-    <em> Diagram of a GRU Gate. </em>
-</p>
-
-Image Source [^5]
 
 #### Transformer Models
 
 ##### Self-Attention Mechanism
 
 The self-attention mechanism is a key component of transformer models. [^7] It allows the model to weigh the importance of different words in a sentence when making predictions. The self-attention mechanism works by calculating a score for each word in the sentence based on its relationship with the other words in the sentence. These scores are then used to calculate a weighted sum of the word embeddings, which is used as the input to the next layer of the model. The basic structure of the self-attention mechanism is as follows:
+
+<p align="center">
+    <img src="Data/Images/Attention_diagram.jpg" alt="Scaled Dot-Product Attention" height="500"/>
+    <br>
+    <em> Scaled Dot-Product Attention. </em>
+</p>
+
+Image Source [^7]
 
 ```math
 \begin{align*}
@@ -256,14 +264,6 @@ Where:
 - $K$ is the key matrix;
 - $V$ is the value matrix;
 - $d_k$ is the dimension of the key matrix.
-
-<p align="center">
-    <img src="Data/Images/Attention_diagram.jpg" alt="Scaled Dot-Product Attention" height="500"/>
-    <br>
-    <em> Scaled Dot-Product Attention. </em>
-</p>
-
-Image Source [^7]
 
 ##### Multi-Head Attention
 
@@ -280,13 +280,18 @@ Image Source [^7]
 ```math
 \begin{align*}
     \textsf{MultiHead}(Q, K, V) &= \textsf{Concat}(\textsf{head}_1, \ldots, \textsf{head}_h) W^O \\
-    \textsf{head}_i &= \textsf{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+    \textsf{where } \textsf{head}_i &= \textsf{Attention}(QW_i^Q, KW_i^K, VW_i^V)
 \end{align*}
 ```
 
 Where:
 - $QW_i^Q$, $KW_i^K$, and $VW_i^V$ are the query, key, and value matrices for head $i$;
 - $W^O$ is the output weight matrix.
+
+And:
+```math
+W_iQ \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iK \in \mathbb{R}^{d_{\text{model}} \times d_k}, \quad W_iV \in \mathbb{R}^{d_{\text{model}} \times d_v}, \quad \text{and} \quad W_O \in \mathbb{R}^{h \times d_v \times d_{\text{model}}}.
+```
 
 <p align="center">
     <img src="Data/Images/Transformer_diagram.jpg" alt="Transformer Architecture" height="500"/>
@@ -299,6 +304,14 @@ Image Source [^7]
 #### Autoencoders
 
 Autoencoders are a type of neural network that are used for unsupervised learning tasks. They work by an encoder network that maps the input data into a latent space representation and a decoder network that reconstructs the input data from this representation. The main objective of an autoencoder is to learn a compressed, distributed encoding of the input data such that the reconstruction from this representation is as close to the original input as possible. The basic structure of an autoencoder is as follows:
+
+<p align="center">
+    <img src="Data/Images/Autoencoder_structure.png" alt="Autoencoder structure" style="max-width: 90%;"/>
+    <br>
+    <em> Schematic structure of an autoencoder with 3 fully connected hidden layers. The code (z, or h for reference in the text) is the most internal layer. </em>
+</p> 
+
+Image Source [^8]
 
 ```math
 \begin{align*}
@@ -313,14 +326,6 @@ Where:
 - $W$ and $W'$ are the weight matrices;
 - $b$ and $b'$ are the bias vectors.
 
-<p align="center">
-    <img src="Data/Images/Autoencoder_structure.png" alt="Autoencoder structure" style="max-width: 90%;"/>
-    <br>
-    <em> Schematic structure of an autoencoder with 3 fully connected hidden layers. The code (z, or h for reference in the text) is the most internal layer. </em>
-</p> 
-
-Image Source [^8]
-
 ##### Variational Autoencoders
 
 Variational Autoencoders (VAEs) extend the basic autoencoder by incorporating probabilistic modeling into the encoding process. Instead of directly encoding the input data into a fixed representation, VAE learns to encode the input data into a probability distribution in the latent space.
@@ -330,6 +335,14 @@ VAE imposes a constraint on the distribution of the latent variables to follow a
 During training, VAE aims to maximise the likelihood of generating the input data under the learned distribution in the latent space while simultaneously minimising the difference between the generated data and the original input data.
 
 The basic structure of a VAE is as follows:
+
+<p align="center">
+    <img src="Data/Images/VAE_Basic.png" alt="VAE" style="max-width: 90%;"/>
+    <br>
+    <em> The basic scheme of a variational autoencoder. </em>
+</p>
+
+Image Source [^9]
 
 ```math
 \begin{align*}
@@ -343,16 +356,6 @@ Where:
 - $\mu$ and $\sigma$ are the mean and standard deviation of the latent distribution;
 - $z$ is the latent variable sampled from the distribution;
 - $\mathcal{N}(\mu, \sigma)$ is the Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
-
-<p align="center">
-    <img src="Data/Images/VAE_Basic.png" alt="VAE" style="max-width: 90%;"/>
-    <br>
-    <em> The basic scheme of a variational autoencoder. </em>
-</p>
-
-Image Source [^9]
-
-
 
 ## Results
 
