@@ -18,7 +18,10 @@ class WordFreq:
         self.pres_text = [word for sublist in self.pres_text for word in sublist]
         self.qa_text = [word for sublist in qa_text for word in sublist]
         self.qa_text = [
-            word for sublist in self.qa_text for item in sublist for word in item
+            word 
+            for sublist in self.qa_text 
+            for item in sublist 
+            for word in item
         ]
         self.word_freq = {}
         self.plotObj = None
