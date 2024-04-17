@@ -31,6 +31,7 @@ class DataSet:
         self.df = None
         self.train, self.test = self.load_data(singleCompany)
         self.vocab = self.make_vocab()
+        self.vocab_total = self.make_vocab_total()
 
     def load_data(self, singleCompany=False):
         """
@@ -254,6 +255,7 @@ class DataSet:
     def make_vocab(self):
         """
         Creates a dictionary which has each word for each company.
+        Splits into presentation and Q&A sections.
 
         Returns:
             dict: Returns a dictionary containing a dictionary with each word.
@@ -262,24 +264,52 @@ class DataSet:
         for company in self.df["Company"].unique():
             df = self.train[self.train["Company"] == company]
             pres_unique_words = set()
-            paras = set()
             for para in df["Presentation"]:
                 assert isinstance(para, list), "Presentation has no paragraphs."
-                paras = set([word for sublist in para for word in sublist])
-            pres_unique_words = pres_unique_words | paras
+                pres_unique_words.update(set([word for sublist in para for word in sublist]))
 
             qa_unique_words = set()
             for qa in df["QA"]:
                 assert isinstance(qa, list), "QA has no questions."
                 questions = set([word for sublist in qa for word in sublist[0]])
                 answers = set([word for sublist in qa for word in sublist[1]])
-                qa_unique_words = qa_unique_words | questions | answers
+                qa_unique_words.update(questions)
+                qa_unique_words.update(answers)
             vocab[company] = {}
             vocab[company]["Presentation"] = {
                 w: i for i, w in enumerate(pres_unique_words)
             }
             vocab[company]["QA"] = {w: i for i, w in enumerate(qa_unique_words)}
         return vocab
+    
+    def make_vocab_total(self):
+        """
+        Creates a dictionary which has each word for all companies.
+        Does not split into presentation and Q&A sections.
+
+        returns:
+            dict: Returns a dictionary containing a dictionary with each word.
+        """
+
+        vocab = {}
+        for company in self.df["Company"].unique():
+            df = self.train[self.train["Company"] == company]
+            all_unique_words = set()
+            for para in df["Presentation"]:
+                assert isinstance(para, list), "Presentation has no paragraphs."
+                all_unique_words.update(set([word for sublist in para for word in sublist]))
+                
+            for qa in df["QA"]:
+                assert isinstance(qa, list), "QA has no questions."
+                questions = set([word for sublist in qa for word in sublist[0]])
+                answers = set([word for sublist in qa for word in sublist[1]])
+                all_unique_words.update(questions)
+                all_unique_words.update(answers)
+                
+            vocab[company] = {word: i for i, word in enumerate(all_unique_words)}
+            
+        return vocab
+
 
     def split_data(self):
         """

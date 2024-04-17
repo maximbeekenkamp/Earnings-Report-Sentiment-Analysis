@@ -10,9 +10,9 @@ class VAE(tf.keras.Model):
         Args:
             encoder (tf.keras.Model): Encoder layers grouped into a linear stack.
             decoder (tf.keras.Model): Decoder layers grouped into a linear stack.
-            mu_layers (tf.keras.Layer): Layers for computing the mean of the 
+            mu_layers (tf.keras.Layer): Layers for computing the mean of the
             latent space.
-            logvar_layers (tf.keras.Layer): Layers for computing the log variance 
+            logvar_layers (tf.keras.Layer): Layers for computing the log variance
             of the latent space.
             **kwargs: Additional keyword arguments.
         """
@@ -63,7 +63,7 @@ class VAE(tf.keras.Model):
         """
         e = tf.random.normal(shape=self.mu.shape)
         return self.mu + e * sqrt(exp(self.logvar))
-    
+
     def compile(self, rec_loss, kld_loss, *args, **kwargs):
         """
         Compiles the model.
@@ -77,16 +77,16 @@ class VAE(tf.keras.Model):
         self.kld_loss = kld_loss
 
     def train_step(self, data):
-            """
-            Training step for the VAE.
+        """
+        Training step for the VAE.
 
-            Args:
-                data (tf.Tensor): Input data.
+        Args:
+            data (tf.Tensor): Input data.
 
-            Returns:
-                tf.Tensor: The output of the batch step.
-            """
-            return self.batch_step(data, training=True)
+        Returns:
+            tf.Tensor: The output of the batch step.
+        """
+        return self.batch_step(data, training=True)
 
     def test_step(self, data):
         """
@@ -106,11 +106,11 @@ class VAE(tf.keras.Model):
 
         Args:
             data (tuple): A tuple containing the input data and labels.
-            training (bool, optional): Whether the model is in training 
+            training (bool, optional): Whether the model is in training
             mode or not. Defaults to True.
 
         Returns:
-            dict: A dictionary containing the output metrics and losses 
+            dict: A dictionary containing the output metrics and losses
             of the batch step.
         """
         (x, labels), y = data

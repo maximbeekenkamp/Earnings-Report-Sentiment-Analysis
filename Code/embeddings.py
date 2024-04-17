@@ -1,11 +1,14 @@
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import tensorflow as tf
 
-from transformer import Decoder, Encoder
 from autoencoder import VAE
+from rnn import MyLSTM, MyGRU
+from transformer import SA_Encoder, SA_Decoder
+
 
 class Tokens:
-    def __init__(self, corpus, company):
+    def __init__(self, corpus, company, total_bool=False):
         """
         Class to create tokens for the presentation and QA sections of
         a single company's report.
@@ -13,32 +16,63 @@ class Tokens:
         Args:
             corpus (DataSet): DataSet class object containing the data.
             company (str): A company's ticker symbol.
+            total_bool (bool, optional): Boolean to choose whether to split the tokens into
+            presentation and QA sections. False if splitting is desired. Defaults to False.
         """
-        self.word_to_token_dict = corpus.vocab
-        self.word_to_token_dict = self.word_to_token_dict[company]
-        self.token_to_word_dict = {"Presentation": {}, "QA": {}}
-        for section in self.token_to_word_dict.keys():
-            self.token_to_word_dict[section] = {
-                v: k for k, v in self.word_to_token_dict[section].items()
+        if total_bool:
+            self.word_to_token_dict = corpus.vocab_total[company]
+            self.token_to_word_dict = {
+                v: k for k, v in enumerate(self.word_to_token_dict)
             }
+        else:
+            self.word_to_token_dict = corpus.vocab[company]
+            self.token_to_word_dict = {"Presentation": {}, "QA": {}}
+            for section in self.token_to_word_dict.keys():
+                self.token_to_word_dict[section] = {
+                    v: k for k, v in self.word_to_token_dict[section].items()
+                }
+
 
 class Embeddings:
-    def __init__(self, pres_df, qa_df, training_params):
+    def __init__(self, corpus, pres_train_df, qa_train_df, pres_test_df, qa_test_df, training_vars):
         """
         Class to create embeddings for the Presentation and QA
         sections of a company's report.
 
         Args:
+            corpus (DataSet): DataSet class object containing the data.
             pres_df (df): df containing a list of paragraphs containing a list
             of words from the presentation section.
             qa_df (df): df containing a list of question answer tuples containing
             lists of words from the Q&A section.
-            training_params (dict): dictionary containing the training parameters.
+            training_vars (dict): dictionary containing the training variables.
         """
-        self.pres_list = list(pres_df)
-        self.qa_list = list(qa_df)
+        self.corpus = corpus
+
+        self.pres_train_list = list(pres_train_df)
+        self.qa_train_list = list(qa_train_df)
+        assert len(self.pres_train_list) == len(
+            self.qa_train_list
+        ), "Same number of reports required."
+
+        self.pres_test_list = list(pres_test_df)
+        self.qa_test_list = list(qa_test_df)
+        assert len(self.pres_test_list) == len(
+            self.qa_test_list
+        ), "Same number of reports required."
+
         self.tfidf_dict = {}
-        self.training_params = training_params
+
+        self.lstm_dict = {}
+        self.lstm_decode_dict = {}
+
+        self.gru_dict = {}
+        self.gru_decode_dict = {}
+
+        self.sa_dict = {}
+        self.sa_decode_dict = {}
+
+        self.training_vars = training_vars
 
     def embedding_matrix(self, company, mode):
         """
@@ -48,23 +82,39 @@ class Embeddings:
         Args:
             company (str): Companies ticker symbol.
             mode (str): Mode to choose between the embedding method. Choose between
-            'tfidf' and 'doc2vec'.
+            'tfidf', 'lstm', 'gru', or 'sa'.
         """
-        self.tfidf_dict[company] = {}
-        assert len(self.pres_list) == len(
-            self.qa_list
-        ), "Same number of reports required."
-        for i, pres in enumerate(self.pres_list):
-            if mode == "tfidf":
-                self.tfidf(company, pres, self.qa_list[i], i)
-            elif mode == "lstm":
-                self.lstm_embed(company, pres, self.qa_list[i], i)
+        pres_list = self.pres_train_list.append(self.pres_test_list)
+        qa_list = self.qa_train_list.append(self.qa_test_list)
+        if mode == "tfidf":
+            self.tfidf_dict[company] = {}
+            for i, pres in enumerate(pres_list):
+                self.tfidf(company, pres, qa_list[i], i)
+        else:
+            train_data = zip(self.pres_train_list, self.qa_train_list)
+            val_data = zip(self.pres_test_list, self.qa_test_list)
+
+            company_tokens = Tokens(self.corpus, company, total_bool=True)
+            train_data = [
+                company_tokens.word_to_token_dict[word] for word in train_data
+            ]
+            val_data = [company_tokens.word_to_token_dict[word] for word in val_data]
+            if mode == "lstm":
+                self.lstm_embed(
+                    company, self.training_vars, pres_list, qa_list, train_data, val_data
+                )
             elif mode == "gru":
-                self.gru_embed(company, pres, self.qa_list[i], i)
+                self.gru_embed(
+                    company, self.training_vars, pres_list, qa_list, train_data, val_data
+                )
             elif mode == "sa":
-                self.sa_embed(company, pres, self.qa_list[i], i, self.training_params)
+                self.sa_embed(
+                    company, self.training_vars, pres_list, qa_list, train_data, val_data
+                )
             else:
-                raise ValueError("Invalid mode. Please choose 'tfidf' or 'doc2vec'.")
+                raise ValueError(
+                    "Invalid mode. Please choose 'tfidf', 'lstm', 'gru', or 'sa'."
+                )
 
     def tfidf(self, company, pres, qa, i):
         """
@@ -95,7 +145,7 @@ class Embeddings:
             self.tfidf_dict[company][i]["Presentation"] = [
                 vectorizer.transform(para) for para in pres
             ]
-        except:
+        except Exception as e:
             output_msg = "Error in Presentation"
             output_msg += f"\n Company: {company} \n Report number: {i}"
             for para in pres:
@@ -106,74 +156,316 @@ class Embeddings:
                 (vectorizer.transform(ques), vectorizer.transform(ans))
                 for ques, ans in qa
             ]
-        except:
+        except Exception as e:
             output_msg = "Error in QA"
             output_msg += f"\n Company: {company} \n Report number: {i}"
             for ques, ans in qa:
                 output_msg += f"\n QUES: {ques} \n ANS: {ans}"
             raise ValueError(f"{output_msg}")
 
-    def lstm_embed(self, company, pres, qa, i):
-        pass
+    def lstm_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
+        """
+        Creates the contextualised embeddings for the Presentation and QA sections using the
+        LSTM model.
 
-    def gru_embed(self, company, pres, qa, i):
-        pass
+        Args:
+            company (str): The name of the company.
+            training_vars (dict): A dictionary containing training variables.
+            pres_list (list): The entire list of presentation sections.
+            qa_list (list): The entire list of QA sections.
+            train_data (list): The train data containing both the presentation and QA sections.
+            val_data (list): The test data containing both the presentation and QA sections.
 
-    def sa_embed(self, company, pres, qa, i, training_vars):
-        # Define your transformer parameters
-        # embedding_size = 128
-        # num_heads = 8
-        # input_sequence_length = 100
-        # output_sequence_length = 100
+        Returns:
+            None, but updates the self.lstm_dict and self.lstm_decode_dict dictionaries.
+        """
 
-        # training_vars = {
-        #     'num_heads': num_heads,
-        #     'embedding_size': embedding_size,
-        #     'input_sequence_length': input_sequence_length,
-        #     'output_sequence_length': output_sequence_length,
-        # }
-        # Create your transformer model
-        encoder = Encoder(training_vars)
-        decoder = Decoder(training_vars)
+        def train(train_data, val_data, training_vars):
+            """
+            Trains the VAE model using the given training data and validation data.
 
-        # latent_dim = 64
+            Args:
+                train_data (list: The training data.
+                val_data (list): The validation data.
+                training_vars (dict): A dictionary containing the training variables.
 
-        # # Create your autoencoder model
-        encoder_layers = tf.keras.Sequential([
-            encoder,
-            tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"),
-        ])
-        decoder_layers = tf.keras.Sequential([
-            tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"),
-            decoder,
-        ])
-        mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
-        logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
-        autoencoder = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
-        
-        autoencoder.compile(
-            optimizer= tf.keras.optimizers.Adam(training_vars["learning_rate"]),
-            rec_loss=self.rec_loss, 
-            kld_loss=self.kld_loss, 
-            metrics= [
-                tf.keras.metrics.MeanSquaredError(),
-                tf.keras.metrics.BinaryCrossentropy()
+            Returns:
+                VAE: The trained VAE model.
+            """
+            encoder_layers = tf.keras.Sequential(
+                [
+                    MyLSTM(units=training_vars["embedding_size"]),
+                    tf.keras.layers.Dense(
+                        training_vars["latent_dim"], activation="relu"
+                    ),
                 ]
+            )
+
+            decoder_layers = tf.keras.Sequential(
+                [
+                    tf.keras.layers.Dense(
+                        training_vars["embedding_size"], activation="relu"
+                    ),
+                    MyLSTM(units=training_vars["embedding_size"]),
+                ]
+            )
+
+            mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+
+            vae.compile(
+                optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
+                rec_loss=self.rec_loss,
+                kld_loss=self.kld_loss,
+                metrics=[
+                    tf.keras.metrics.MeanSquaredError(),
+                    tf.keras.metrics.BinaryCrossentropy(),
+                ],
+            )
+
+            vae.fit(
+                (train_data, None),
+                train_data,
+                epochs=training_vars["vae epochs"],
+                batch_size=training_vars["vae batch_size"],
+                validation_data=((val_data, None), val_data),
+            )
+
+            return vae
+
+        vae = train(train_data, val_data, training_vars)
+
+        self.lstm_dict, self.lstm_decode_dict = self.context_embed(
+            company, pres_list, qa_list, self.lstm_dict, self.lstm_decode_dict, vae
         )
 
-        # Generate some sample tokenized data (replace this with your actual data loading process)
-        # Assuming tokenized_data is a numpy array of shape (num_samples, max_seq_length, embedding_size)
-        num_samples = 1000
-        max_seq_length = 100
-        embedding_size = 128
-        tokenized_data = np.random.rand(num_samples, max_seq_length, embedding_size)
+    def gru_embed(
+        self, company, training_vars, pres_list, qa_list, train_data, val_data
+    ):
+        """
+        Creates the contextualised embeddings for the Presentation and QA sections using the
+        GRU model.
 
-        # Train the autoencoder
-        autoencoder.fit((tokenized_data, None), tokenized_data, epochs=10, batch_size=32)
+        Args:
+            company (str): The name of the company.
+            training_vars (dict): A dictionary containing training variables.
+            pres_list (list): The entire list of presentation sections.
+            qa_list (list): The entire list of QA sections.
+            train_data (list): The train data containing both the presentation and QA sections.
+            val_data (list): The test data containing both the presentation and QA sections.
 
-        # Train the transformer model using the autoencoder
-        transformer_model.fit(tokenized_data, autoencoder.encoder.predict(tokenized_data), epochs=10, batch_size=32)
+        Returns:
+            None, but updates the self.gru_dict and self.gru_decode_dict dictionaries.
+        """
 
+        def train(train_data, val_data, training_vars):
+            """
+            Trains the VAE model using the given training data and validation data.
+
+            Args:
+                train_data (list: The training data.
+                val_data (list): The validation data.
+                training_vars (dict): A dictionary containing the training variables.
+
+            Returns:
+                VAE: The trained VAE model.
+            """
+            encoder_layers = tf.keras.Sequential(
+                [
+                    MyGRU(units=training_vars["embedding_size"]),
+                    tf.keras.layers.Dense(
+                        training_vars["latent_dim"], activation="relu"
+                    ),
+                ]
+            )
+            decoder_layers = tf.keras.Sequential(
+                [
+                    tf.keras.layers.Dense(
+                        training_vars["embedding_size"], activation="relu"
+                    ),
+                    MyGRU(units=training_vars["embedding_size"]),
+                ]
+            )
+            mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+
+            vae.compile(
+                optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
+                rec_loss=self.rec_loss,
+                kld_loss=self.kld_loss,
+                metrics=[
+                    tf.keras.metrics.MeanSquaredError(),
+                    tf.keras.metrics.BinaryCrossentropy(),
+                ],
+            )
+
+            vae.fit(
+                (train_data, None),
+                train_data,
+                epochs=training_vars["vae epochs"],
+                batch_size=training_vars["vae batch_size"],
+                validation_data=((val_data, None), val_data),
+            )
+
+            return vae
+
+        vae = train(train_data, val_data, training_vars)
+
+        self.gru_dict, self.gru_decode_dict = self.context_embed(
+            company, pres_list, qa_list, self.gru_dict, self.gru_decode_dict, vae
+        )
+
+    def sa_embed(
+        self, company, training_vars, pres_list, qa_list, train_data, val_data
+    ):
+        """
+        Creates the contextualised embeddings for the Presentation and QA sections using the
+        transformer model.
+
+        Args:
+            company (str): The name of the company.
+            training_vars (dict): A dictionary containing training variables.
+            pres_list (list): The entire list of presentation sections.
+            qa_list (list): The entire list of QA sections.
+            train_data (list): The train data containing both the presentation and QA sections.
+            val_data (list): The test data containing both the presentation and QA sections.
+
+        Returns:
+            None, but updates the self.sa_dict and self.sa_decode_dict dictionaries.
+        """
+
+        def train(train_data, val_data, training_vars):
+            """
+            Trains the VAE model using the given training data and validation data.
+
+            Args:
+                train_data (list: The training data.
+                val_data (list): The validation data.
+                training_vars (dict): A dictionary containing the training variables.
+
+            Returns:
+                VAE: The trained VAE model.
+            """
+            encoder = SA_Encoder(training_vars)
+            decoder = SA_Decoder(training_vars)
+
+            encoder_layers = tf.keras.Sequential(
+                [
+                    encoder,
+                    tf.keras.layers.Dense(
+                        training_vars["latent_dim"], activation="relu"
+                    ),
+                ]
+            )
+            decoder_layers = tf.keras.Sequential(
+                [
+                    tf.keras.layers.Dense(
+                        training_vars["embedding_size"], activation="relu"
+                    ),
+                    decoder,
+                ]
+            )
+            mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
+            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+
+            vae.compile(
+                optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
+                rec_loss=self.rec_loss,
+                kld_loss=self.kld_loss,
+                metrics=[
+                    tf.keras.metrics.MeanSquaredError(),
+                    tf.keras.metrics.BinaryCrossentropy(),
+                ],
+            )
+
+            vae.fit(
+                (train_data, None),
+                train_data,
+                epochs=training_vars["vae epochs"],
+                batch_size=training_vars["vae batch_size"],
+                validation_data=((val_data, None), val_data),
+            )
+
+            return vae
+
+        vae = train(train_data, val_data, training_vars)
+
+        self.sa_dict, self.sa_decode_dict = self.context_embed(
+            company, pres_list, qa_list, self.sa_dict, self.sa_decode_dict, vae
+        )
+
+    def context_embed(
+        self, company, pres_list, qa_list, embedding_dict, reconstruction_dict, vae
+    ):
+        """
+        Stores the embeddings and reconstructions for the entire dataset.
+
+        Args:
+            company (str): The name of the company.
+            pres_list (list): The entire list of presentation sections.
+            qa_list (list): The entire list of QA sections.
+            embedding_dict (dict): A dictionary to store the embeddings.
+            reconstruction_dict (dict): A dictionary to store the reconstructions.
+            vae (VAE): VAE class object, the trained model.
+
+        Raises:
+            ValueError: Catches errors in the presentation section and provides
+            a more informative error message.
+            ValueError: Catches errors in the QA section and provides
+            a more informative error message.
+
+        Returns:
+            dict, dict: A tuple containing the embedding and reconstruction dictionaries.
+        """
+        embedding_dict[company] = {}
+        reconstruction_dict[company] = {}
+        for report_num, (pres, qa) in enumerate(zip(pres_list, qa_list)):
+            embedding_dict[company][report_num] = {}
+            reconstruction_dict[company][report_num] = {}
+            for para in pres:
+                try:
+                    embedding, reconstruction = self.extract_embeddings(vae, para)
+                    embedding_dict[company][report_num]["Presentation"] = embedding
+                    reconstruction_dict[company][report_num]["Presentation"] = (
+                        reconstruction,
+                        para,
+                    )
+                except Exception as e:
+                    output_msg = "Error in Presentation"
+                    output_msg += (
+                        f"\n Company: {company} \n Report number: {report_num}"
+                    )
+                    output_msg += f"\n {para}"
+                    raise ValueError(f"{output_msg}")
+            for ques, ans in qa:
+                try:
+                    embedding_ques, reconstruction_ques = self.extract_embeddings(
+                        vae, ques
+                    )
+                    embedding_ans, reconstruction_ans = self.extract_embeddings(
+                        vae, ans
+                    )
+                    embedding_dict[company][report_num]["QA"] = (
+                        embedding_ques,
+                        embedding_ans,
+                    )
+                    reconstruction_dict[company][report_num]["QA"] = (
+                        reconstruction_ques,
+                        ques,
+                        reconstruction_ans,
+                        ans,
+                    )
+                except Exception as e:
+                    output_msg = "Error in QA"
+                    output_msg += (
+                        f"\n Company: {company} \n Report number: {report_num}"
+                    )
+                    output_msg += f"\n QUES: {ques} \n ANS: {ans}"
+                    raise ValueError(f"{output_msg}")
+        return embedding_dict, reconstruction_dict
 
     def kld_loss(self, mu, logvar):
         """
@@ -186,7 +478,35 @@ class Embeddings:
         Returns:
             tf.Tensor: The Kullback-Leibler divergence loss.
         """
-        return 0.5 * tf.reduce_sum(-logvar + (mu ** 2) -1 + tf.exp(logvar), axis=1)
-    
+        return 0.5 * tf.reduce_sum(-logvar + (mu**2) - 1 + tf.exp(logvar), axis=1)
+
     def rec_loss(self, x_true, x_pred):
-        return tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred), axis=(1, 2))
+        """
+        Computes the reconstruction loss.
+
+        Args:
+            x_true (list): The true data.
+            x_pred (list): The predicted data.
+
+        Returns:
+            tf.Tensor: The reconstruction loss.
+        """
+        return tf.reduce_sum(
+            tf.keras.losses.binary_crossentropy(x_true, x_pred), axis=(1, 2)
+        )
+
+    def extract_embeddings(self, vae, x):
+        """
+        Extracts the embeddings from the VAE model, as well as the reconstruction.
+
+        Args:
+            vae (VAE): VAE class object, the trained model.
+            x (list): The input data.
+
+        Returns:
+            tuple: A tuple containing the embeddings and the reconstruction.
+        """
+        xp = vae.encoder(x)
+        zp = vae.latent_ops(xp)
+        z = vae.decoder(zp)
+        return zp, z

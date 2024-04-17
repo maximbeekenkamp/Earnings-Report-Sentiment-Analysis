@@ -255,7 +255,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
         pos_encoding = np.concatenate([np.sin(angle_rads), np.cos(angle_rads)], axis=-1)
         return tf.cast(pos_encoding, dtype=tf.float32)
 
-class Encoder:
+class SA_Encoder:
     def __init__(self, training_vars):
         """
         Class to create the encoder model.
@@ -283,7 +283,7 @@ class Encoder:
             x = self.transformer(x, False)
         return x
 
-class Decoder:
+class SA_Decoder:
     def __init__(self, training_vars):
         """
         Class to create the decoder model.

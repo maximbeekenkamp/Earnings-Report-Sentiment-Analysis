@@ -78,7 +78,7 @@ class Plotter:
             raise ValueError("Argument must be 'Presentation', 'QA', or 'both'.")
         pass
 
-    def plot_report_similarity_line(self, sim_dict, test=False, singleCompany=False):
+    def plot_report_similarity_line(self, sim_dict, test=True, singleCompany=False):
         """
         Plots the similarity scores for one or multiple companies over the 16 reports.
         Although more informative, this plot can be difficult to read when plotting for 
@@ -87,7 +87,7 @@ class Plotter:
 
         Args:
             sim_dict (dict): dictionary containing the similarity scores for each company.
-            test (bool, optional): True if the test set is being used. Defaults to False.
+            test (bool, optional): True if the test set is being used. Defaults to True.
             singleCompany (bool, optional): True if only one company is being plotted.
             Defaults to False.
         """
@@ -149,16 +149,17 @@ class Plotter:
 
         plt.show()
 
-    def plot_report_similarity_bar(self, sim_dict, test=False, singleCompany=False):
+    def plot_report_similarity_bar(self, sim_dict, test=True, singleCompany=False):
         """
         Plots the similarity scores for one or multiple companies over the 16 reports.
         Formats the plot as a bar chart, this is easier to read when plotting for 
         multiple companies.
 
         Args:
-            sim_dict (_type_): _description_
-            test (bool, optional): _description_. Defaults to False.
-            singleCompany (bool, optional): _description_. Defaults to False.
+            sim_dict (dict): dictionary containing the similarity scores for each company.
+            test (bool, optional): True if the test set is being used. Defaults to True.
+            singleCompany (bool, optional): True if only one company is being plotted.
+            Defaults to False.
         """
         plt.figure()
         _, ax = plt.subplots(figsize=(12, 5))

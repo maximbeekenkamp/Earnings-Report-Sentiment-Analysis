@@ -55,16 +55,30 @@ chmod +x install_packages.sh
 
 ### Running the code
 
-To run the code, you have two options. You can either specify the company you want to analyse, or you can run the code on all companies. To run the code on all companies, you can run the following command in the terminal:
+To run the code, you have two options. You can either specify the company you want to analyse, or you can run the code on all companies.
+
+To prevent the runtime from being too long, you are required to specify the type of embedding you want to use. The options are:
 
 ```bash
-python main.py
+python main.py --embedding [EMBEDDING]
 ```
 
-However, if you have a specific company you want to analyse, you can simply run the following command in the terminal:
+Where `--embedding` can be one of the following options:
+- `tfidf`: Term Frequency-Inverse Document Frequency [(TF-IDF)](#tf-idf)
+- `lstm`: Long Short-Term Memory [(LSTM)](#lstm)
+- `gru`: Gated Recurrent Unit [(GRU)](#gru)
+- `sa`: Self-Attention Mechanism [(SA)](#self-attention-mechanism)
+
+Eg. to run the code with the LSTM embedding, you would run the following command in the terminal:
 
 ```bash
-python main.py --company
+python main.py --embedding lstm
+```
+
+Additionally, if you have a specific company you want to analyse, you can simply run the following command in the terminal:
+
+```bash
+python main.py --embedding sa --company
 ```
 
 After which you will see `>> ` in the terminal, denoting that you are in the REPL.
@@ -97,7 +111,7 @@ All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/
 
 This projects includes three main methods of analysis:
 1. Document Similarity Analysis
-    - This section compares the similarity between the prepared presentation and the Q&A section of the earnings call for each company. This is achieved via TF-IDF embeddings, doc2vec embeddings, and a custom embedding method, which are then used to calculate cosine similarity.
+    - This section compares the similarity between the prepared presentation and the Q&A section of the earnings call for each company. This is achieved via TF-IDF embeddings, and contextual embedding techniques, which are then used to calculate cosine similarity.
 2. Transformer Sentiment Analysis
     - This section uses a pre-trained transformer model to generate sentiment labels for the prepared presentation and Q&A section of the earnings call for each company. 
     - These are used as the training labels for the RNN, LSTM, and GRU models. Then the transformer models are used to generate new sentiment labels.
