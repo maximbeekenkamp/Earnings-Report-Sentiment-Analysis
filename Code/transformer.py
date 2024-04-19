@@ -1,3 +1,7 @@
+from math import e
+from multiprocessing import context
+import sys
+from uu import encode
 import numpy as np
 import tensorflow as tf
 
@@ -118,11 +122,12 @@ class MultiHeadedAttention(tf.keras.layers.Layer):
         ), "Embedding size must be divisible by number of heads."
 
         self.head_size = emb_sz // num_heads
-        self.attention_heads = [
-            AttentionHead(self.head_size, self.head_size, True)
-            for _ in range(num_heads)
-        ]
-        self.linear = tf.keras.layers.Dense(emb_sz)
+        self.Ks = [self.add_weight(shape=(emb_sz, self.head_size), initializer="glorot_normal") for _ in range(num_heads)]
+        self.Vs = [self.add_weight(shape=(emb_sz, self.head_size), initializer="glorot_normal") for _ in range(num_heads)]
+        self.Qs = [self.add_weight(shape=(emb_sz, self.head_size), initializer="glorot_normal") for _ in range(num_heads)]
+        
+        self.attention_mat = AttentionMatrix(use_mask=use_mask)
+        self.linear = tf.keras.layers.Dense(emb_sz, activation="relu")
 
     @tf.function
     def call(self, inputs_for_keys, inputs_for_values, inputs_for_queries):
@@ -141,12 +146,17 @@ class MultiHeadedAttention(tf.keras.layers.Layer):
             tf.Tensor: Multi-headed attention.
             Shape: [batch_size x window_size_queries x output_size]
         """
-        attention_heads_output = [
-            attention_head(inputs_for_keys, inputs_for_values, inputs_for_queries)
-            for attention_head in self.attention_heads
-        ]
-        concat_attention = tf.concat(attention_heads_output, axis=-1)
-        return self.linear(concat_attention)
+        outputs = []
+        for i in range(self.num_heads):
+            K = tf.tensordot(inputs_for_keys, self.Ks[i], 1)
+            V = tf.tensordot(inputs_for_values, self.Vs[i], 1)
+            Q = tf.tensordot(inputs_for_queries, self.Qs[i], 1)
+
+            score = tf.matmul(self.attention_mat((K, Q)), V)
+            outputs.append(score)
+
+        concat_score = tf.concat(outputs, axis=-1)
+        return self.linear(concat_score)
 
 
 class TransformerBlock(tf.keras.layers.Layer):
@@ -177,7 +187,7 @@ class TransformerBlock(tf.keras.layers.Layer):
         self.layer_norm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
     @tf.function
-    def call(self, inputs, decode_bool):
+    def call(self, inputs, context_seq):
         """
         Runs the transformer block layer.
         See reference for more details.
@@ -186,41 +196,53 @@ class TransformerBlock(tf.keras.layers.Layer):
         Args:
             inputs (tf.Tensor): Input tensor.
             Shape: [batch_size x input_seq_length x embedding_size]
-            decode_bool (bool): Boolean to determine whether to apply
-            self-attention or not.
+            context_seq (tf.Tensor): Context sequence tensor.
+            Shape: [batch_size x context_seq_length x embedding_size]
 
         Returns:
             tf.Tensor: Output tensor.
             Shape: [batch_size x input_seq_length x embedding_size]
         """
-        if decode_bool:
-            if self.num_heads == 1:
-                masked_attention = self.self_atten(inputs, inputs, inputs)
-            else:
-                masked_attention = self.multi_atten(inputs, inputs, inputs)
-            out1 = self.layer_norm1(inputs + masked_attention)
         if self.num_heads == 1:
-            un_masked_attention = self.self_context_atten(out1, out1, out1)
-        else:
-            un_masked_attention = self.self_context_atten_multi(out1, out1, out1)
-        out2 = self.layer_norm2(out1 + un_masked_attention)
+            atten_out = self.self_atten(inputs, inputs, inputs)
+            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.layer_norm1(inputs + atten_out)
 
-        ffout = self.ff_layer(out2)
-        out3 = self.layer_norm2(out2 + ffout)
-        return out3
+            atten_out = self.self_context_atten(context_seq, context_seq, atten_out)
+            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.layer_norm2(atten_out + atten_out)
+
+        else:
+            atten_out = self.multi_atten(inputs, inputs, inputs)
+            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.layer_norm1(inputs + atten_out)
+
+            atten_out = self.self_context_atten_multi(context_seq, context_seq, atten_out)
+            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.layer_norm2(atten_out + atten_out)
+
+        ff_out = self.ff_layer(atten_out)
+        ff_out = tf.keras.layers.Dropout(0.1)(ff_out)
+        return self.layer_norm3(atten_out + ff_out)
 
 
 class PositionalEncoding(tf.keras.layers.Layer):
-    def __init__(self, max_seq_len, embed_size):
+    def __init__(self, vocab_size, embed_size, seq_len):
         """
         Class to add positional encoding to the input embeddings.
 
         Args:
-            max_seq_len (int): The maximum sequence length.
+            vocab_size (int): Vocabulary size.
             embed_size (int): Embedding size.
+            seq_len (int): The chosen sequence length, window size.
         """
         super().__init__()
-        self.pos_encoding = self.positional_encoding(max_seq_len, embed_size)
+        self.embed_size = embed_size 
+
+        # simplifies shape issues
+        self.embedding = tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=embed_size)
+
+        self.pos_encoding = self.positional_encoding(seq_len, embed_size)
 
     def call(self, x):
         """
@@ -232,7 +254,9 @@ class PositionalEncoding(tf.keras.layers.Layer):
         Returns:
             tf.Tensor: Output tensor with positional encoding added.
         """
-        return x + self.pos_encoding[: tf.shape(x)[1], :]
+        embeddings = self.embedding(x) * (self.embed_size**0.5)
+        embeddings += self.pos_encoding[tf.newaxis, :tf.shape(x)[1], :]
+        return embeddings
 
     def positional_encoding(self, length, depth):
         """
@@ -256,7 +280,42 @@ class PositionalEncoding(tf.keras.layers.Layer):
         return tf.cast(pos_encoding, dtype=tf.float32)
 
 
-class SA_Encoder:
+class MHA(tf.keras.layers.Layer):
+    def __init__(self, training_vars):
+        """
+        Class to create the MHA model.
+
+        Args:
+            num_heads (int): The number of attention heads.
+            embedding_size (int): The size of the embedding.
+            seq_len (int): Maximum sequence length.
+            num_layers (int): Number of transformer layers.
+        """
+        super(MHA, self).__init__()
+        self.num_heads = training_vars["num_heads"]
+        self.embedding_size = training_vars["embedding_size"]
+        self.seq_len = training_vars["seq_len"]
+        self.num_layers = training_vars["num_layers"]
+
+        self.encoder = SA_Encoder(training_vars)
+        self.decoder = SA_Decoder(training_vars)
+
+    def call(self, inputs):
+        """
+        Creates the entire model end-to-end.
+
+        Args:
+            inputs (tf.Tensor): Input tensor.
+
+        Returns:
+            tf.Tensor: Decoder output tensor.
+        """
+        encoder_output = self.encoder(inputs)
+        decoder_output = self.decoder(inputs, encoder_output)
+        return decoder_output
+
+
+class SA_Encoder(tf.keras.layers.Layer):
     def __init__(self, training_vars):
         """
         Class to create the encoder model.
@@ -264,28 +323,32 @@ class SA_Encoder:
         Args:
             num_heads (int): The number of attention heads.
             embedding_size (int): The size of the embedding.
+            seq_len (int): Maximum sequence length.
+            num_layers (int): Number of transformer layers.
         """
+        super(SA_Encoder, self).__init__()
         self.num_heads = training_vars["num_heads"]
         self.embedding_size = training_vars["embedding_size"]
-        self.max_seq_len = training_vars["max_seq_len"]
+        self.seq_len = training_vars["seq_len"]
         self.num_layers = training_vars["num_layers"]
-        self.positional_encoding = PositionalEncoding(self.max_seq_len, self.embedding_size)
-        self.transformer = TransformerBlock(self.embedding_size, self.num_heads)
+        self.vocab_size = training_vars["vocab_size"]
+        self.positional_encoding = PositionalEncoding(self.vocab_size, self.embedding_size, self.seq_len)
+        self.transformer_blocks = [TransformerBlock(self.embedding_size, self.num_heads) for _ in range(self.num_layers)]
 
     def call(self, inputs):
         """
         Creates the encoder model.
 
         Returns:
-            tf.keras.Model: Encoder model.
+            tf.Tensor: Encoder output tensor.
         """
         x = self.positional_encoding(inputs)
-        for _ in range(self.num_layers):
-            x = self.transformer(x, False)
+        for i in range(self.num_layers):
+            x = self.transformer_blocks[i](x, x) 
         return x
 
 
-class SA_Decoder:
+class SA_Decoder(tf.keras.layers.Layer):
     def __init__(self, training_vars):
         """
         Class to create the decoder model.
@@ -293,22 +356,75 @@ class SA_Decoder:
         Args:
             num_heads (int): The number of attention heads.
             embedding_size (int): The size of the embedding.
+            seq_len (int): Maximum sequence length.
+            num_layers (int): Number of transformer layers.
         """
+        super(SA_Decoder, self).__init__()
         self.num_heads = training_vars["num_heads"]
         self.embedding_size = training_vars["embedding_size"]
-        self.max_seq_len = training_vars["max_seq_len"]
+        self.seq_len = training_vars["seq_len"]
         self.num_layers = training_vars["num_layers"]
-        self.positional_encoding = PositionalEncoding(self.max_seq_len, self.embedding_size)
-        self.transformer = TransformerBlock(self.embedding_size, self.num_heads)
+        self.positional_encoding = PositionalEncoding(self.seq_len, self.embedding_size)
+        self.transformer_blocks = [TransformerBlock(self.embedding_size, self.num_heads) for _ in range(self.num_layers)]
 
-    def call(self, inputs):
+    def call(self, inputs, context_seq):
         """
         Creates the decoder model.
 
         Returns:
-            tf.keras.Model: Decoder model.
+            tf.Tensor: Decoder output tensor.
         """
         x = self.positional_encoding(inputs)
-        for _ in range(self.num_layers):
-            x = self.transformer(x, True)
+        outputs = tf.zeros_like(x[:, :-1, :])  # Shifted to the left by one
+        for i in range(self.num_layers):
+            x = self.transformer_blocks[i](x, context_seq[:, :-1, :])
+            outputs = tf.concat([outputs, x[:, -1:, :]], axis=1)
         return x
+    
+
+"""
+From paper: https://arxiv.org/pdf/1706.03762.pdf
+
+FFN(x) = max(0, xW1 + b1)W2 + b2
+dim[x] = dim[W2] = dim[model]
+dim[W1] = dim[b1] = dim[model] * 4
+
+Encoder:
+- 6 layers
+All sub layers and embeddings have dimension dim[model]
+Apply dropout to the output of each sub-layer, before 
+it is added to the sub-layer input and normalized
+P_drop = 0.1
+
+Decoder:
+- 6 layers
+3 sub layers in each layer
+- First is masked multi-head self-attention mechanism
+- Second is multi-head attention over the output of the encoder stack
+- Third is a FFN
+Ouput embeddings are offset by 1 position
+
+Attention:
+dim[queries] = dim[keys]
+dim[values]
+W_q = dim[model] x dim[keys]
+W_k = dim[model] x dim[keys]
+W_v = dim[model] x dim[values]
+=>
+W_out = (num_heads*dim[values]) x dim[model]
+
+
+MHA:
+dim[model] / num_heads = int
+(8)
+
+Embeddings:
+dim[Positional Encoding] = dim[Embeddings] = dim[model]
+
+train_test_split * TotVal / BatchSize = num_batches (int)
+(1 - train_test_split) * TotVal / BatchSize = num_batches (int)
+
+
+
+
+"""

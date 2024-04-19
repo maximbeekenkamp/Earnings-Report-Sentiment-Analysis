@@ -1,5 +1,6 @@
+import sys
 import tensorflow as tf
-from tensorflow import exp, sqrt, square, Dense, Flatten, Reshape, Sequential
+
 
 
 class VAE(tf.keras.Model):
@@ -62,7 +63,7 @@ class VAE(tf.keras.Model):
             tf.Tensor: Sampled z from the latent space.
         """
         e = tf.random.normal(shape=self.mu.shape)
-        return self.mu + e * sqrt(exp(self.logvar))
+        return self.mu + e * tf.sqrt(tf.exp(self.logvar))
 
     def compile(self, rec_loss, kld_loss, *args, **kwargs):
         """

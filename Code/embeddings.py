@@ -1,9 +1,11 @@
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 import tensorflow as tf
+import sys
 
 from autoencoder import VAE
 from rnn import MyLSTM, MyGRU
-from transformer import SA_Encoder, SA_Decoder
+from transformer import MHA, SA_Encoder, SA_Decoder
 
 
 class Tokens:
@@ -21,7 +23,7 @@ class Tokens:
         if total_bool:
             self.word_to_token_dict = corpus.vocab_total[company]
             self.token_to_word_dict = {
-                v: k for k, v in enumerate(self.word_to_token_dict)
+                v: k for k, v in self.word_to_token_dict.items()
             }
         else:
             self.word_to_token_dict = corpus.vocab[company]
@@ -30,7 +32,40 @@ class Tokens:
                 self.token_to_word_dict[section] = {
                     v: k for k, v in self.word_to_token_dict[section].items()
                 }
+        
+    def tokenise(self, pres, qa):
+        """
+        Tokenises the input data.
 
+        Args:
+            pres (list): Presentation data.
+            Format:
+            [Report#(0-15)[Para[Word]]]
+            qa (list): QA data.
+            Format:
+            [Report#(0-15)[(Ques[Word], Ans[Word])]]
+
+        Returns:
+            list: The tokenised data.
+            Format:
+            [Para/Question/Answer[Token]]
+        """
+        data = []
+        max_sequence_len = 0
+        for report_num, (pres, qa) in enumerate(zip(pres, qa)):
+            for para in pres:
+                data.append([self.word_to_token_dict[word] for word in para])
+                if len(para) > max_sequence_len:
+                    max_sequence_len = len(para)
+            for ques, ans in qa:
+                data.append([self.word_to_token_dict[word] for word in ques])
+                if len(ques) > max_sequence_len:
+                    max_sequence_len = len(ques)
+                data.append([self.word_to_token_dict[word] for word in ans])
+                if len(ans) > max_sequence_len:
+                    max_sequence_len = len(ans)
+        return data, max_sequence_len
+        
 
 class Embeddings:
     def __init__(self, corpus, pres_train_df, qa_train_df, pres_test_df, qa_test_df, training_vars):
@@ -47,7 +82,6 @@ class Embeddings:
             training_vars (dict): dictionary containing the training variables.
         """
         self.corpus = corpus
-
         self.pres_train_list = list(pres_train_df)
         self.qa_train_list = list(qa_train_df)
         assert len(self.pres_train_list) == len(
@@ -83,21 +117,37 @@ class Embeddings:
             mode (str): Mode to choose between the embedding method. Choose between
             'tfidf', 'lstm', 'gru', or 'sa'.
         """
-        pres_list = self.pres_train_list.append(self.pres_test_list)
-        qa_list = self.qa_train_list.append(self.qa_test_list)
+        pres_list = self.pres_train_list
+        for report in self.pres_test_list:
+            pres_list.append(report)
+            
+        qa_list = self.qa_train_list
+        for report in self.qa_test_list:
+            qa_list.append(report)
+
         if mode == "tfidf":
             self.tfidf_dict[company] = {}
             for i, pres in enumerate(pres_list):
                 self.tfidf(company, pres, qa_list[i], i)
         else:
-            train_data = zip(self.pres_train_list, self.qa_train_list)
-            val_data = zip(self.pres_test_list, self.qa_test_list)
-
             company_tokens = Tokens(self.corpus, company, total_bool=True)
-            train_data = [
-                company_tokens.word_to_token_dict[word] for word in train_data
-            ]
-            val_data = [company_tokens.word_to_token_dict[word] for word in val_data]
+            train_data, max_seq_1 = company_tokens.tokenise(self.pres_train_list, self.qa_train_list)
+            val_data, max_seq_2 = company_tokens.tokenise(self.pres_test_list, self.qa_test_list)
+            
+            max_sequence_len = max(max_seq_1, max_seq_2)
+            # if max_sequence_len > self.training_vars["embedding_size"]:
+            #     max_sequence_len = self.training_vars["embedding_size"]
+            self.training_vars["seq_len"] = max_sequence_len
+            train_data = tf.keras.preprocessing.sequence.pad_sequences(
+                train_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
+            )
+            val_data = tf.keras.preprocessing.sequence.pad_sequences(
+                val_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
+            )
+            #TODO: Create a param padding_index: the id of *PAD* token (-1). This is used to mask padding tokens.
+            # This will require making a dict of the length of the tokens prior to padding. The length will become
+            # the index of the first padding token.
+            #TODO: Create a rubric to make sure the shapes always work.
 
             func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
             if mode == "lstm":
@@ -120,10 +170,10 @@ class Embeddings:
             company (str): Companies ticker symbol.
             pres (list): Presentation section of a single report.
             Format:
-            [Para[Word[str]]]
+            [Para[Word]]
             qa (list): QA section of a single report.
             Format:
-            [(Ques[Word[str]], Ans[Word[str]])]
+            [(Ques[Word], Ans[Word])]
             i (int): Report number. (0-15)
 
         Raises:
@@ -339,28 +389,26 @@ class Embeddings:
             Returns:
                 VAE: The trained VAE model.
             """
-            encoder = SA_Encoder(training_vars)
-            decoder = SA_Decoder(training_vars)
+            encoder = CustomSequential()
+            decoder = CustomSequential()
 
-            encoder_layers = tf.keras.Sequential(
-                [
-                    encoder,
-                    tf.keras.layers.Dense(
-                        training_vars["latent_dim"], activation="relu"
-                    ),
-                ]
-            )
-            decoder_layers = tf.keras.Sequential(
-                [
-                    tf.keras.layers.Dense(
-                        training_vars["embedding_size"], activation="relu"
-                    ),
-                    decoder,
-                ]
-            )
+            encoder.add(MHA(training_vars))
+            encoder.add(tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"))
+
+            decoder.add(tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"))
+            decoder.add(MHA(training_vars))
+
             mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
-            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+            vae = VAE(encoder, decoder, mu_layers, logvar_layers)
+            
+            vae((val_data, val_data))
+            # vae((train_data, train_data))
+
+            vae.summary()
+            vae.encoder.summary()
+            vae.decoder.summary()
+            sys.exit()
 
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
@@ -373,17 +421,16 @@ class Embeddings:
             )
 
             vae.fit(
-                (train_data, None),
-                train_data,
+                (train_data, train_data), train_data,
                 epochs=training_vars["vae epochs"],
                 batch_size=training_vars["vae batch_size"],
-                validation_data=((val_data, None), val_data),
+                validation_data=((val_data, val_data), val_data),
             )
 
             return vae
 
         vae = train(train_data, val_data, training_vars)
-
+        sys.exit()
         self.sa_dict, self.sa_decode_dict = self.context_embed(
             company, pres_list, qa_list, self.sa_dict, self.sa_decode_dict, vae
         )
@@ -427,7 +474,7 @@ class Embeddings:
                     output_msg += (
                         f"\n Company: {company} \n Report number: {report_num}"
                     )
-                    output_msg += f"\n {para}"
+                    # output_msg += f"\n {para}"
                     raise ValueError(f"{output_msg}")
             for ques, ans in qa:
                 try:
@@ -452,7 +499,7 @@ class Embeddings:
                     output_msg += (
                         f"\n Company: {company} \n Report number: {report_num}"
                     )
-                    output_msg += f"\n QUES: {ques} \n ANS: {ans}"
+                    # output_msg += f"\n QUES: {ques} \n ANS: {ans}"
                     raise ValueError(f"{output_msg}")
         return embedding_dict, reconstruction_dict
 
@@ -499,3 +546,15 @@ class Embeddings:
         zp = vae.latent_ops(xp)
         z = vae.decoder(zp)
         return zp, z
+
+class CustomSequential:
+    def __init__(self):
+        self.layers = []
+
+    def add(self, layer):
+        self.layers.append(layer)
+
+    def __call__(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return x

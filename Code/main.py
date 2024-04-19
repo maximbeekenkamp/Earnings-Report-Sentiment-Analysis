@@ -6,13 +6,20 @@ from model_run import Runner
 
 def main(embedding_type, singleCompany=False):
     training_vars = {
-        "epochs": 100,
-        "batch_size": 32,
-        "learning_rate": 0.001,
-    }
+        # LM
+        "embedding_size": 256,
+        "num_heads": 8,
+        "num_layers": 6,
 
-    network = Runner(singleCompany)
-    network.run(embedding_type, training_vars, singleCompany)
+        # VAE
+        "latent_dim": 128,
+        "vae epochs": 2,
+        "vae batch_size": 64,
+        "learning_rate": 0.005,
+    }
+    
+    network = Runner(embedding_type, training_vars, singleCompany)
+    network.run(singleCompany)
 
 
 def parse_args():
@@ -24,7 +31,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Run the project.")
     parser.add_argument(
-        "--emmbedding",
+        "--embedding",
         required=True,
         choices=["tfidf", "lstm", "gru", "sa"],
         help="Type of model to run.",
@@ -46,14 +53,14 @@ if __name__ == "__main__":
                 type_in = input(">> ")
                 if type_in == ":exit":
                     break
-                runquery = main(args.type, type_in)
+                runquery = main(args.embedding, type_in)
 
         else:
-            main(args.type)
+            main(args.embedding)
 
     except (IOError, FileNotFoundError):
         print("Input error, Company not recognised.")
         sys.exit(1)
-    except KeyError:
-        print("Input error, Company not recognised.")
-        sys.exit(1)
+    # except KeyError:
+    #     print("Input error, Company not recognised.")
+    #     sys.exit(1)

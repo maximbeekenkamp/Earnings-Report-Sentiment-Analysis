@@ -193,7 +193,6 @@ class DataSet:
             for para in pres
         ]
 
-        # remove empty paragraphs (mainly an issue with AAPL formatting)
         pres = [para for para in pres if para]
 
         for i, (ques, ans) in enumerate(qa):
@@ -249,6 +248,8 @@ class DataSet:
                         if word not in stops
                     ],
                 )
+        
+        
 
         return pres, qa
 
@@ -262,7 +263,7 @@ class DataSet:
         """
         vocab = {}
         for company in self.df["Company"].unique():
-            df = self.train[self.train["Company"] == company]
+            df = self.df[self.df["Company"] == company]
             pres_unique_words = set()
             for para in df["Presentation"]:
                 assert isinstance(para, list), "Presentation has no paragraphs."
@@ -295,7 +296,7 @@ class DataSet:
 
         vocab = {}
         for company in self.df["Company"].unique():
-            df = self.train[self.train["Company"] == company]
+            df = self.df[self.df["Company"] == company]
             all_unique_words = set()
             for para in df["Presentation"]:
                 assert isinstance(para, list), "Presentation has no paragraphs."
