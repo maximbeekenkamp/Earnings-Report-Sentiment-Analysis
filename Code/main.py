@@ -10,11 +10,13 @@ def main(embedding_type, singleCompany=False):
         "embedding_size": 256,
         "num_heads": 8,
         "num_layers": 6,
+        "seq_len": 128,
+        "batch_size": 2,
 
         # VAE
         "latent_dim": 128,
         "vae epochs": 2,
-        "vae batch_size": 64,
+        "vae batch_size": 2,
         "learning_rate": 0.005,
     }
     

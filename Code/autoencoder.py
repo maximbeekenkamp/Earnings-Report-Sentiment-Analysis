@@ -24,19 +24,18 @@ class VAE(tf.keras.Model):
         self.rec_tracker = tf.keras.metrics.Mean(name="rec")
         self.mu_layers = mu_layers
         self.logvar_layers = logvar_layers
-
+    
     def call(self, inputs):
         """
         Forward pass for the VAE.
 
         Args:
-            inputs (tuple): Tuple containing the input data and labels.
+            inputs (tf.Tensor): The input data
 
         Returns:
             tf.Tensor: Output tensor.
         """
-        x, label = inputs
-        outputs = self.encoder(x)
+        outputs = self.encoder(inputs)
         outputs = self.latent_ops(outputs)
         return self.decoder(outputs)
 
@@ -62,7 +61,7 @@ class VAE(tf.keras.Model):
         Returns:
             tf.Tensor: Sampled z from the latent space.
         """
-        e = tf.random.normal(shape=self.mu.shape)
+        e = tf.random.normal(shape=tf.shape(self.mu))
         return self.mu + e * tf.sqrt(tf.exp(self.logvar))
 
     def compile(self, rec_loss, kld_loss, *args, **kwargs):
@@ -106,7 +105,7 @@ class VAE(tf.keras.Model):
         Performs a single batch step of the autoencoder model.
 
         Args:
-            data (tuple): A tuple containing the input data and labels.
+            data (tf.Tensor): Input data.
             training (bool, optional): Whether the model is in training
             mode or not. Defaults to True.
 
@@ -114,17 +113,17 @@ class VAE(tf.keras.Model):
             dict: A dictionary containing the output metrics and losses
             of the batch step.
         """
-        (x, labels), y = data
+        x = data
         with tf.GradientTape() as tape:
-            y_pred = self.call((x, labels))
+            y_pred = self.call(x)
             kld_loss = self.kld_loss(self.mu, self.logvar)
-            rec_loss = self.rec_loss(y, y_pred)
+            rec_loss = self.rec_loss(x, y_pred)
             total_loss = rec_loss + kld_loss
         if training:
             gradients = tape.gradient(total_loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        self.compiled_metrics.update_state(y, y_pred)
+        self.compiled_metrics.update_state(x, y_pred)
         self.rec_tracker.update_state(rec_loss)
         self.kld_tracker.update_state(kld_loss)
         output = {}

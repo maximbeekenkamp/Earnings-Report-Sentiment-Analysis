@@ -131,23 +131,25 @@ class Embeddings:
                 self.tfidf(company, pres, qa_list[i], i)
         else:
             company_tokens = Tokens(self.corpus, company, total_bool=True)
+            self.training_vars["vocab_size"] = len(company_tokens.word_to_token_dict)
             train_data, max_seq_1 = company_tokens.tokenise(self.pres_train_list, self.qa_train_list)
             val_data, max_seq_2 = company_tokens.tokenise(self.pres_test_list, self.qa_test_list)
             
             max_sequence_len = max(max_seq_1, max_seq_2)
-            # if max_sequence_len > self.training_vars["embedding_size"]:
-            #     max_sequence_len = self.training_vars["embedding_size"]
+            if max_sequence_len > self.training_vars["seq_len"]:
+                max_sequence_len = self.training_vars["seq_len"]
             self.training_vars["seq_len"] = max_sequence_len
+
+            if len(train_data) % self.training_vars["batch_size"] != 0:
+                train_data = train_data[:-1]
             train_data = tf.keras.preprocessing.sequence.pad_sequences(
                 train_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
+            if len(val_data) % self.training_vars["batch_size"] != 0:
+                val_data = val_data[:-1]
             val_data = tf.keras.preprocessing.sequence.pad_sequences(
                 val_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
-            #TODO: Create a param padding_index: the id of *PAD* token (-1). This is used to mask padding tokens.
-            # This will require making a dict of the length of the tokens prior to padding. The length will become
-            # the index of the first padding token.
-            #TODO: Create a rubric to make sure the shapes always work.
 
             func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
             if mode == "lstm":
@@ -402,8 +404,8 @@ class Embeddings:
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
             
-            vae((val_data, val_data))
-            # vae((train_data, train_data))
+            # vae((val_data, val_data))
+            vae((train_data[:2], train_data[:2]))
 
             vae.summary()
             vae.encoder.summary()
