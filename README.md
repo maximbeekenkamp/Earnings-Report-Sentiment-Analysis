@@ -10,6 +10,8 @@ Acknowledging the importance of these transcripts, companies spend a lot of time
 
 So, perhaps there is an information advantage to be exploited by performing sentiment analysis on each segment separately potentially exposing 'truer' beliefs. To begin with I want to look at the sentiment disparity between the two sections, but this project can be expanded to see which section is more illuminating, or if the transcript should be digested as a whole for the most accurate interpretation.
 
+Skip ahead to the [Method Section](#method) here.
+
 ## Use Guide
 
 This code was written using Python 3.11.4, and requires the following packages:
