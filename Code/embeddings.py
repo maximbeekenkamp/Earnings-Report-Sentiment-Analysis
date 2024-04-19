@@ -145,11 +145,14 @@ class Embeddings:
             train_data = tf.keras.preprocessing.sequence.pad_sequences(
                 train_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
+            train_data = tf.data.Dataset.from_tensor_slices(train_data).batch(self.training_vars["batch_size"])
+
             if len(val_data) % self.training_vars["batch_size"] != 0:
                 val_data = val_data[:-1]
             val_data = tf.keras.preprocessing.sequence.pad_sequences(
                 val_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
+            val_data = tf.data.Dataset.from_tensor_slices(val_data).batch(self.training_vars["batch_size"])
 
             func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
             if mode == "lstm":
@@ -395,6 +398,7 @@ class Embeddings:
             decoder = CustomSequential()
 
             encoder.add(MHA(training_vars))
+            encoder.add(tf.keras.layers.Reshape((-1,)))
             encoder.add(tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"))
 
             decoder.add(tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"))
@@ -405,11 +409,12 @@ class Embeddings:
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
             
             # vae((val_data, val_data))
-            vae((train_data[:2], train_data[:2]))
+            for i, batch in enumerate(train_data):
+                if i % 100 == 0:
+                    print(i)
+                vae(batch)
 
             vae.summary()
-            vae.encoder.summary()
-            vae.decoder.summary()
             sys.exit()
 
             vae.compile(
@@ -423,10 +428,10 @@ class Embeddings:
             )
 
             vae.fit(
-                (train_data, train_data), train_data,
+                train_data,
                 epochs=training_vars["vae epochs"],
                 batch_size=training_vars["vae batch_size"],
-                validation_data=((val_data, val_data), val_data),
+                validation_data=(val_data),
             )
 
             return vae

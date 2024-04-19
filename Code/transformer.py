@@ -322,11 +322,20 @@ class MHA(tf.keras.layers.Layer):
         Returns:
             tf.Tensor: Decoder output tensor.
         """
-        encoder_output = self.encoder(inputs)
         expected_shape = (self.batch_size, self.seq_len, self.embedding_size)
-        assert encoder_output.shape == expected_shape, f"Expected shape: {expected_shape}, Actual shape: {encoder_output.shape}"
+
+        encoder_output = self.encoder(inputs)
+
+        assert (
+            encoder_output.shape == expected_shape
+        ), f"Expected shape: {expected_shape}, Actual shape: {encoder_output.shape}"
+
         decoder_output = self.decoder(inputs, encoder_output)
-        assert decoder_output.shape == expected_shape, f"Expected shape: {expected_shape}, Actual shape: {decoder_output.shape}"
+
+        assert (
+            decoder_output.shape == expected_shape
+        ), f"Expected shape: {expected_shape}, Actual shape: {decoder_output.shape}"
+        
         return decoder_output
 
 
@@ -406,4 +415,3 @@ class SA_Decoder(tf.keras.layers.Layer):
             x = self.transformer_blocks[i](x, context_seq[:, :-1, :])
             outputs = tf.concat([outputs, x[:, -1:, :]], axis=1)
         return x
-    
