@@ -146,6 +146,8 @@ class Embeddings:
                 train_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
             train_data = tf.data.Dataset.from_tensor_slices(train_data).batch(self.training_vars["batch_size"])
+            train_data = train_data.shuffle(len(train_data))
+
 
             if len(val_data) % self.training_vars["batch_size"] != 0:
                 val_data = val_data[:-1]
@@ -153,6 +155,7 @@ class Embeddings:
                 val_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
             )
             val_data = tf.data.Dataset.from_tensor_slices(val_data).batch(self.training_vars["batch_size"])
+            val_data = val_data.shuffle(len(val_data))
 
             func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
             if mode == "lstm":
@@ -402,7 +405,7 @@ class Embeddings:
             encoder.add(tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"))
 
             decoder.add(tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"))
-            decoder.add(MHA(training_vars))
+            # decoder.add(MHA(training_vars))
 
             mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
@@ -415,7 +418,7 @@ class Embeddings:
                 vae(batch)
 
             vae.summary()
-            sys.exit()
+            # sys.exit()
 
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
@@ -428,9 +431,9 @@ class Embeddings:
             )
 
             vae.fit(
-                train_data,
+                x=train_data,
                 epochs=training_vars["vae epochs"],
-                batch_size=training_vars["vae batch_size"],
+                batch_size=training_vars["batch_size"],
                 validation_data=(val_data),
             )
 
