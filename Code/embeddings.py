@@ -5,7 +5,7 @@ import sys
 
 from autoencoder import VAE
 from rnn import MyLSTM, MyGRU
-from transformer import MHA, SA_Encoder, SA_Decoder
+from transformer import MHA
 
 
 class Tokens:

@@ -12,14 +12,13 @@ def main(embedding_type, singleCompany=False):
         "num_layers": 6,
         "seq_len": 256,
         "batch_size": 2,
-
         # VAE
         "latent_dim": 128,
         "vae epochs": 2,
         "vae batch_size": 2,
         "learning_rate": 0.005,
     }
-    
+
     network = Runner(embedding_type, training_vars, singleCompany)
     network.run(singleCompany)
 

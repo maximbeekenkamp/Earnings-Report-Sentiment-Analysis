@@ -1,4 +1,3 @@
-import sys
 from preprocessing import DataSet
 from wordfreq import WordFreq
 from embeddings import Embeddings
@@ -14,7 +13,7 @@ class Runner:
         Args:
             embedding_type (str): Type of embedding to use.
             training_vars (dict): Dictionary containing the training variables.
-            singleCompany (str, None): If None, run for all companies. 
+            singleCompany (str, None): If None, run for all companies.
             If str, run for that single company.
         """
         self.corpus = DataSet(singleCompany=singleCompany)

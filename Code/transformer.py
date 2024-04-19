@@ -32,7 +32,9 @@ class AttentionMatrix(tf.keras.layers.Layer):
         window_size_keys = K.get_shape()[1]
 
         # - Mask is [batch_size x window_size_queries x window_size_keys]
-        triu_mask = np.triu(np.ones((window_size_queries, window_size_keys)) * np.NINF, k=1)
+        triu_mask = np.triu(
+            np.ones((window_size_queries, window_size_keys)) * np.NINF, k=1
+        )
         atten_mask = tf.convert_to_tensor(value=triu_mask, dtype=tf.float32)
 
         if self.use_mask == True:
@@ -46,6 +48,7 @@ class AttentionMatrix(tf.keras.layers.Layer):
             )
 
         return score
+
 
 class AttentionHead(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, is_self_attention=True, **kwargs):
@@ -249,7 +252,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
 
         # simplifies shape issues
         self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab_size+1, output_dim=embed_size, mask_zero=True
+            input_dim=vocab_size + 1, output_dim=embed_size, mask_zero=True
         )
 
         self.pos_encoding = self.positional_encoding(seq_len, embed_size)
@@ -335,7 +338,7 @@ class MHA(tf.keras.layers.Layer):
         assert (
             decoder_output.shape == expected_shape
         ), f"Expected shape: {expected_shape}, Actual shape: {decoder_output.shape}"
-        
+
         return decoder_output
 
 
