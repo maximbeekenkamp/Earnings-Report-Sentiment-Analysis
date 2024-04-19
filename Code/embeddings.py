@@ -5,7 +5,7 @@ import sys
 
 from autoencoder import VAE
 from rnn import MyLSTM, MyGRU
-from transformer import MHA
+from transformer import MHA, PositionalEncoding
 
 
 class Tokens:
@@ -273,27 +273,37 @@ class Embeddings:
             Returns:
                 VAE: The trained VAE model.
             """
-            encoder_layers = tf.keras.Sequential(
-                [
-                    MyLSTM(units=training_vars["embedding_size"]),
-                    tf.keras.layers.Dense(
-                        training_vars["latent_dim"], activation="relu"
-                    ),
-                ]
+            encoder = CustomSequential()
+            decoder = CustomSequential()
+
+            encoder.add(
+                PositionalEncoding(
+                    training_vars["vocab_size"],
+                    training_vars["embedding_size"],
+                    training_vars["seq_len"],
+                )
+            )
+            encoder.add(MyLSTM(units=training_vars["embedding_size"]))
+            encoder.add(
+                tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu")
             )
 
-            decoder_layers = tf.keras.Sequential(
-                [
-                    tf.keras.layers.Dense(
-                        training_vars["embedding_size"], activation="relu"
-                    ),
-                    MyLSTM(units=training_vars["embedding_size"]),
-                ]
+            decoder.add(
+                tf.keras.layers.Dense(
+                    (training_vars["latent_dim"] + training_vars["embedding_size"])
+                    // 2,
+                    activation="relu",
+                )
+            )
+            decoder.add(
+                tf.keras.layers.Dense(
+                    training_vars["embedding_size"], activation="relu"
+                )
             )
 
             mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
-            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+            vae = VAE(encoder, decoder, mu_layers, logvar_layers)
 
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
@@ -306,11 +316,10 @@ class Embeddings:
             )
 
             vae.fit(
-                (train_data, None),
-                train_data,
+                x=train_data,
                 epochs=training_vars["vae epochs"],
-                batch_size=training_vars["vae batch_size"],
-                validation_data=((val_data, None), val_data),
+                batch_size=training_vars["batch_size"],
+                validation_data=(val_data),
             )
 
             return vae
@@ -352,25 +361,37 @@ class Embeddings:
             Returns:
                 VAE: The trained VAE model.
             """
-            encoder_layers = tf.keras.Sequential(
-                [
-                    MyGRU(units=training_vars["embedding_size"]),
-                    tf.keras.layers.Dense(
-                        training_vars["latent_dim"], activation="relu"
-                    ),
-                ]
+            encoder = CustomSequential()
+            decoder = CustomSequential()
+
+            encoder.add(
+                PositionalEncoding(
+                    training_vars["vocab_size"],
+                    training_vars["embedding_size"],
+                    training_vars["seq_len"],
+                )
             )
-            decoder_layers = tf.keras.Sequential(
-                [
-                    tf.keras.layers.Dense(
-                        training_vars["embedding_size"], activation="relu"
-                    ),
-                    MyGRU(units=training_vars["embedding_size"]),
-                ]
+            encoder.add(MyGRU(units=training_vars["embedding_size"]))
+            encoder.add(
+                tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu")
             )
+
+            decoder.add(
+                tf.keras.layers.Dense(
+                    (training_vars["latent_dim"] + training_vars["embedding_size"])
+                    // 2,
+                    activation="relu",
+                )
+            )
+            decoder.add(
+                tf.keras.layers.Dense(
+                    training_vars["embedding_size"], activation="relu"
+                )
+            )
+
             mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
-            vae = VAE(encoder_layers, decoder_layers, mu_layers, logvar_layers)
+            vae = VAE(encoder, decoder, mu_layers, logvar_layers)
 
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
@@ -383,11 +404,10 @@ class Embeddings:
             )
 
             vae.fit(
-                (train_data, None),
-                train_data,
+                x=train_data,
                 epochs=training_vars["vae epochs"],
-                batch_size=training_vars["vae batch_size"],
-                validation_data=((val_data, None), val_data),
+                batch_size=training_vars["batch_size"],
+                validation_data=(val_data),
             )
 
             return vae
@@ -508,6 +528,7 @@ class Embeddings:
         Returns:
             dict, dict: A tuple containing the embedding and reconstruction dictionaries.
         """
+        # TODO: not handling padding tokens correctly
         embedding_dict[company] = {}
         reconstruction_dict[company] = {}
         for report_num, (pres, qa) in enumerate(zip(pres_list, qa_list)):

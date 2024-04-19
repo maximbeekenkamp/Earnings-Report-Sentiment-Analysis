@@ -21,7 +21,6 @@ class MyLSTM(tf.keras.layers.Layer):
             input_shape (TensorShape): Shape of the input tensor.
         """
         kernel_shape = tf.TensorShape((input_shape[-1], 4 * self.units))
-
         self.kernel = self.add_weight(
             name="kernel",
             shape=kernel_shape,
@@ -29,16 +28,20 @@ class MyLSTM(tf.keras.layers.Layer):
             initializer="glorot_uniform",
             trainable=True,
         )
+
+        recurrent_kernel_shape = tf.TensorShape((self.units, 4 * self.units))
         self.recurrent_kernel = self.add_weight(
             name="recurrent_kernel",
-            shape=kernel_shape,
+            shape=recurrent_kernel_shape,
             dtype=tf.float32,
             initializer="orthogonal",
             trainable=True,
         )
+
+        bias_shape = tf.TensorShape((4 * self.units,))
         self.bias = self.add_weight(
             name="bias",
-            shape=(4 * self.units,),
+            shape=bias_shape,
             dtype=tf.float32,
             initializer="zeros",
             trainable=True,
@@ -46,6 +49,7 @@ class MyLSTM(tf.keras.layers.Layer):
 
         super().build(input_shape)
 
+    @tf.function
     def call(self, inputs, initial_state=None):
         """
         Computes the output of the layer.
@@ -86,9 +90,8 @@ class MyLSTM(tf.keras.layers.Layer):
         )
 
         outputs = []
-        inputs_time_major = tf.transpose(inputs, perm=[1, 0, 2])
 
-        for input_each_step in inputs_time_major:
+        for input_each_step in tf.unstack(inputs, axis=1):
             ft = tf.sigmoid(tf.matmul(input_each_step, W_f) + tf.matmul(ht, U_f) + b_f)
             it = tf.sigmoid(tf.matmul(input_each_step, W_i) + tf.matmul(ht, U_i) + b_i)
             ct_squiggle = tf.tanh(
@@ -97,10 +100,9 @@ class MyLSTM(tf.keras.layers.Layer):
             ct = (ft * ct) + (it * ct_squiggle)
             ot = tf.sigmoid(tf.matmul(input_each_step, W_o) + tf.matmul(ht, U_o) + b_o)
             ht = ot * tf.tanh(ct)
-            outputs += [ht]
+            outputs.append(ht)
 
-        outputs = tf.stack(outputs, axis=0)
-        outputs = tf.transpose(outputs, perm=[1, 0, 2])
+        outputs = tf.stack(outputs, axis=1)
 
         return outputs, ht, ct
 
@@ -149,7 +151,6 @@ class MyGRU(tf.keras.layers.Layer):
             input_shape (TensorShape): Shape of the input tensor.
         """
         kernel_shape = tf.TensorShape((input_shape[-1], 3 * self.units))
-
         self.kernel = self.add_weight(
             name="kernel",
             shape=kernel_shape,
@@ -158,17 +159,19 @@ class MyGRU(tf.keras.layers.Layer):
             trainable=True,
         )
 
+        recurrent_kernel_shape = tf.TensorShape((self.units, 3 * self.units))
         self.recurrent_kernel = self.add_weight(
             name="recurrent_kernel",
-            shape=kernel_shape,
+            shape=recurrent_kernel_shape,
             dtype=tf.float32,
             initializer="orthogonal",
             trainable=True,
         )
 
+        bias_shape = tf.TensorShape((2, 3 * self.units))
         self.bias = self.add_weight(
             name="bias",
-            shape=kernel_shape,
+            shape=bias_shape,
             dtype=tf.float32,
             initializer="zeros",
             trainable=True,
@@ -176,6 +179,7 @@ class MyGRU(tf.keras.layers.Layer):
 
         super(MyGRU, self).build(input_shape)
 
+    @tf.function
     def call(self, inputs, initial_state=None):
         """
         Computes the output of the layer.
@@ -201,9 +205,8 @@ class MyGRU(tf.keras.layers.Layer):
         b_z, b_r, b_h = (b[:units], b[units : (units * 2)], b[(units * 2) :])
 
         outputs = []
-        inputs_time_major = tf.transpose(inputs, perm=[1, 0, 2])
 
-        for input_each_step in inputs_time_major:
+        for input_each_step in tf.unstack(inputs, axis=1):
             Z = tf.math.sigmoid(
                 tf.matmul(input_each_step, W_z) + tf.matmul(ht, U_z) + b_z
             )
@@ -214,9 +217,9 @@ class MyGRU(tf.keras.layers.Layer):
                 tf.matmul(input_each_step, W_h) + (R * (tf.matmul(ht, U_h))) + b_h
             )
             ht = (Z * ht) + ((1 - Z) * H)
-            outputs += [ht]
-        outputs = tf.stack(outputs)
-        outputs = tf.transpose(outputs, perm=[1, 0, 2])
+            outputs.append(ht)
+
+        outputs = tf.stack(outputs, axis=1)
 
         return outputs, ht
 

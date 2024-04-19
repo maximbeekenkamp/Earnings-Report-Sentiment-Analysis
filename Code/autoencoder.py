@@ -22,7 +22,7 @@ class VAE(tf.keras.Model):
         self.rec_tracker = tf.keras.metrics.Mean(name="rec")
         self.mu_layers = mu_layers
         self.logvar_layers = logvar_layers
-
+    
     def call(self, inputs):
         """
         Forward pass for the VAE.
@@ -111,6 +111,7 @@ class VAE(tf.keras.Model):
             dict: A dictionary containing the output metrics and losses
             of the batch step.
         """
+        #TODO: currently rec and kld are outputting NaNs
         x = data
         with tf.GradientTape() as tape:
             y_pred = self.call(x)
