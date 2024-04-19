@@ -364,7 +364,8 @@ class SA_Decoder(tf.keras.layers.Layer):
         self.embedding_size = training_vars["embedding_size"]
         self.seq_len = training_vars["seq_len"]
         self.num_layers = training_vars["num_layers"]
-        self.positional_encoding = PositionalEncoding(self.seq_len, self.embedding_size)
+        self.vocab_size = training_vars["vocab_size"]
+        self.positional_encoding = PositionalEncoding(self.vocab_size, self.embedding_size, self.seq_len)
         self.transformer_blocks = [TransformerBlock(self.embedding_size, self.num_heads) for _ in range(self.num_layers)]
 
     def call(self, inputs, context_seq):

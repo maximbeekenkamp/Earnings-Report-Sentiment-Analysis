@@ -1,12 +1,10 @@
 import tensorflow as tf
 import numpy as np
-from transformer import SA_Encoder  # Replace 'your_module' with the actual name of your module containing the SA_Encoder class
+from transformer import SA_Encoder, SA_Decoder
 
-# Define a function to create a dummy input tensor
 def create_dummy_input(batch_size, seq_len, vocab_size):
     return tf.constant(np.random.randint(0, vocab_size, size=(batch_size, seq_len)), dtype=tf.int32)
 
-# Define a function to create dummy training variables
 def create_training_vars():
     return {
         "num_heads": 2,
@@ -16,27 +14,29 @@ def create_training_vars():
         "vocab_size": 100
     }
 
-# Define a test case for SA_Encoder
-def test_sa_encoder():
-    # Create a SA_Encoder instance
+def test_sa_encoder_decoder():
     training_vars = create_training_vars()
     sa_encoder = SA_Encoder(training_vars)
 
-    # Create a dummy input tensor
+    sa_decoder = SA_Decoder(training_vars)
+
     batch_size = 4
     seq_len = 10
     vocab_size = training_vars["vocab_size"]
-    inputs = create_dummy_input(batch_size, seq_len, vocab_size)
+    encoder_inputs = create_dummy_input(batch_size, seq_len, vocab_size)
+    decoder_inputs = create_dummy_input(batch_size, seq_len, vocab_size)
 
-    # Pass the input through the SA_Encoder
-    encoded_output = sa_encoder(inputs)
+    encoded_output = sa_encoder(encoder_inputs)
 
-    # Check the shape of the encoded output
-    expected_shape = (batch_size, seq_len, training_vars["embedding_size"])
-    assert encoded_output.shape == expected_shape, f"Expected shape: {expected_shape}, Actual shape: {encoded_output.shape}"
+    decoder_output = sa_decoder(decoder_inputs, encoded_output)
 
-    print("SA_Encoder test passed.")
+    expected_shape_encoder = (batch_size, seq_len, training_vars["embedding_size"])
+    assert encoded_output.shape == expected_shape_encoder, f"Expected shape for encoder output: {expected_shape_encoder}, Actual shape: {encoded_output.shape}"
 
-# Run the test
+    expected_shape_decoder = (batch_size, seq_len, training_vars["embedding_size"])
+    assert decoder_output.shape == expected_shape_decoder, f"Expected shape for decoder output: {expected_shape_decoder}, Actual shape: {decoder_output.shape}"
+
+    print("SA_Encoder and SA_Decoder test passed.")
+
 if __name__ == "__main__":
-    test_sa_encoder()
+    test_sa_encoder_decoder()
