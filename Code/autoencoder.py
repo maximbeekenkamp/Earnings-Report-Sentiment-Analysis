@@ -2,7 +2,6 @@ import sys
 import tensorflow as tf
 
 
-
 class VAE(tf.keras.Model):
     def __init__(self, encoder, decoder, mu_layers, logvar_layers, **kwargs):
         """
@@ -24,7 +23,7 @@ class VAE(tf.keras.Model):
         self.rec_tracker = tf.keras.metrics.Mean(name="rec")
         self.mu_layers = mu_layers
         self.logvar_layers = logvar_layers
-    
+
     def call(self, inputs):
         """
         Forward pass for the VAE.
@@ -116,6 +115,9 @@ class VAE(tf.keras.Model):
         x = data
         with tf.GradientTape() as tape:
             y_pred = self.call(x)
+            assert (
+                y_pred.shape == x.shape
+            ), f"Output shape: {y_pred.shape}, Input shape: {x.shape}"
             kld_loss = self.kld_loss(self.mu, self.logvar)
             rec_loss = self.rec_loss(x, y_pred)
             total_loss = rec_loss + kld_loss
@@ -123,11 +125,11 @@ class VAE(tf.keras.Model):
             gradients = tape.gradient(total_loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        self.compiled_metrics.update_state(x, y_pred)
         self.rec_tracker.update_state(rec_loss)
         self.kld_tracker.update_state(kld_loss)
         output = {}
         for metric in self.metrics:
+            metric.update_state(x, y_pred)
             output = {metric.name: metric.result()}
         output = {
             **output,

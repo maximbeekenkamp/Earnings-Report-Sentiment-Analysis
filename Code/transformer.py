@@ -32,8 +32,8 @@ class AttentionMatrix(tf.keras.layers.Layer):
         window_size_keys = K.get_shape()[1]
 
         # - Mask is [batch_size x window_size_queries x window_size_keys]
-        mask = np.triu(np.ones((window_size_queries, window_size_keys)) * np.NINF, k=1)
-        atten_mask = tf.convert_to_tensor(value=mask, dtype=tf.float32)
+        triu_mask = np.triu(np.ones((window_size_queries, window_size_keys)) * np.NINF, k=1)
+        atten_mask = tf.convert_to_tensor(value=triu_mask, dtype=tf.float32)
 
         if self.use_mask == True:
             score = tf.nn.softmax(
@@ -46,7 +46,6 @@ class AttentionMatrix(tf.keras.layers.Layer):
             )
 
         return score
-
 
 class AttentionHead(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, is_self_attention=True, **kwargs):
@@ -250,7 +249,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
 
         # simplifies shape issues
         self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab_size, output_dim=embed_size
+            input_dim=vocab_size+1, output_dim=embed_size, mask_zero=True
         )
 
         self.pos_encoding = self.positional_encoding(seq_len, embed_size)
@@ -265,6 +264,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
         Returns:
             tf.Tensor: Output tensor with positional encoding added.
         """
+        x = tf.where(tf.math.equal(x, np.NINF), tf.zeros_like(x), x)
         embeddings = self.embedding(x) * (self.embed_size**0.5)
         embeddings += self.pos_encoding[tf.newaxis, : tf.shape(x)[1], :]
         return embeddings

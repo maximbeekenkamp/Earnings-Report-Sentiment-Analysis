@@ -22,9 +22,7 @@ class Tokens:
         """
         if total_bool:
             self.word_to_token_dict = corpus.vocab_total[company]
-            self.token_to_word_dict = {
-                v: k for k, v in self.word_to_token_dict.items()
-            }
+            self.token_to_word_dict = {v: k for k, v in self.word_to_token_dict.items()}
         else:
             self.word_to_token_dict = corpus.vocab[company]
             self.token_to_word_dict = {"Presentation": {}, "QA": {}}
@@ -32,7 +30,7 @@ class Tokens:
                 self.token_to_word_dict[section] = {
                     v: k for k, v in self.word_to_token_dict[section].items()
                 }
-        
+
     def tokenise(self, pres, qa):
         """
         Tokenises the input data.
@@ -65,10 +63,18 @@ class Tokens:
                 if len(ans) > max_sequence_len:
                     max_sequence_len = len(ans)
         return data, max_sequence_len
-        
+
 
 class Embeddings:
-    def __init__(self, corpus, pres_train_df, qa_train_df, pres_test_df, qa_test_df, training_vars):
+    def __init__(
+        self,
+        corpus,
+        pres_train_df,
+        qa_train_df,
+        pres_test_df,
+        qa_test_df,
+        training_vars,
+    ):
         """
         Class to create embeddings for the Presentation and QA
         sections of a company's report.
@@ -120,7 +126,7 @@ class Embeddings:
         pres_list = self.pres_train_list
         for report in self.pres_test_list:
             pres_list.append(report)
-            
+
         qa_list = self.qa_train_list
         for report in self.qa_test_list:
             qa_list.append(report)
@@ -132,32 +138,52 @@ class Embeddings:
         else:
             company_tokens = Tokens(self.corpus, company, total_bool=True)
             self.training_vars["vocab_size"] = len(company_tokens.word_to_token_dict)
-            train_data, max_seq_1 = company_tokens.tokenise(self.pres_train_list, self.qa_train_list)
-            val_data, max_seq_2 = company_tokens.tokenise(self.pres_test_list, self.qa_test_list)
-            
+            train_data, max_seq_1 = company_tokens.tokenise(
+                self.pres_train_list, self.qa_train_list
+            )
+            val_data, max_seq_2 = company_tokens.tokenise(
+                self.pres_test_list, self.qa_test_list
+            )
+
             max_sequence_len = max(max_seq_1, max_seq_2)
             if max_sequence_len > self.training_vars["seq_len"]:
                 max_sequence_len = self.training_vars["seq_len"]
             self.training_vars["seq_len"] = max_sequence_len
 
-            if len(train_data) % self.training_vars["batch_size"] != 0:
-                train_data = train_data[:-1]
             train_data = tf.keras.preprocessing.sequence.pad_sequences(
-                train_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
+                train_data,
+                maxlen=max_sequence_len,
+                padding="post",
+                truncating="post",
+                value=np.NINF,
+                dtype="float32",
             )
-            train_data = tf.data.Dataset.from_tensor_slices(train_data).batch(self.training_vars["batch_size"])
+            train_data = tf.data.Dataset.from_tensor_slices(
+                train_data, name=f"Train_{company}"
+            ).batch(self.training_vars["batch_size"], drop_remainder=True)
             train_data = train_data.shuffle(len(train_data))
 
-
-            if len(val_data) % self.training_vars["batch_size"] != 0:
-                val_data = val_data[:-1]
             val_data = tf.keras.preprocessing.sequence.pad_sequences(
-                val_data, maxlen=max_sequence_len, padding="post", truncating="post", value=np.NINF, dtype="float32"
+                val_data,
+                maxlen=max_sequence_len,
+                padding="post",
+                truncating="post",
+                value=np.NINF,
+                dtype="float32",
             )
-            val_data = tf.data.Dataset.from_tensor_slices(val_data).batch(self.training_vars["batch_size"])
+            val_data = tf.data.Dataset.from_tensor_slices(
+                val_data, name=f"Train_{company}"
+            ).batch(self.training_vars["batch_size"], drop_remainder=True)
             val_data = val_data.shuffle(len(val_data))
 
-            func_inputs = (company, self.training_vars, pres_list, qa_list, train_data, val_data)
+            func_inputs = (
+                company,
+                self.training_vars,
+                pres_list,
+                qa_list,
+                train_data,
+                val_data,
+            )
             if mode == "lstm":
                 self.lstm_embed(*func_inputs)
             elif mode == "gru":
@@ -216,7 +242,9 @@ class Embeddings:
                 output_msg += f"\n QUES: {ques} \n ANS: {ans}"
             raise ValueError(f"{output_msg}")
 
-    def lstm_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
+    def lstm_embed(
+        self, company, training_vars, pres_list, qa_list, train_data, val_data
+    ):
         """
         Creates the contextualised embeddings for the Presentation and QA sections using the
         LSTM model.
@@ -293,7 +321,9 @@ class Embeddings:
             company, pres_list, qa_list, self.lstm_dict, self.lstm_decode_dict, vae
         )
 
-    def gru_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
+    def gru_embed(
+        self, company, training_vars, pres_list, qa_list, train_data, val_data
+    ):
         """
         Creates the contextualised embeddings for the Presentation and QA sections using the
         GRU model.
@@ -368,7 +398,9 @@ class Embeddings:
             company, pres_list, qa_list, self.gru_dict, self.gru_decode_dict, vae
         )
 
-    def sa_embed(self, company, training_vars, pres_list, qa_list, train_data, val_data):
+    def sa_embed(
+        self, company, training_vars, pres_list, qa_list, train_data, val_data
+    ):
         """
         Creates the contextualised embeddings for the Presentation and QA sections using the
         transformer model.
@@ -402,23 +434,31 @@ class Embeddings:
 
             encoder.add(MHA(training_vars))
             encoder.add(tf.keras.layers.Reshape((-1,)))
-            encoder.add(tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu"))
+            encoder.add(
+                tf.keras.layers.Dense(
+                    training_vars["embedding_size"], activation="relu"
+                )
+            )
+            encoder.add(
+                tf.keras.layers.Dense(training_vars["latent_dim"], activation="relu")
+            )
 
-            decoder.add(tf.keras.layers.Dense(training_vars["embedding_size"], activation="relu"))
-            # decoder.add(MHA(training_vars))
+            decoder.add(
+                tf.keras.layers.Dense(
+                    (training_vars["latent_dim"] + training_vars["embedding_size"])
+                    // 2,
+                    activation="relu",
+                )
+            )
+            decoder.add(
+                tf.keras.layers.Dense(
+                    training_vars["embedding_size"], activation="relu"
+                )
+            )
 
             mu_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
-            
-            # vae((val_data, val_data))
-            for i, batch in enumerate(train_data):
-                if i % 100 == 0:
-                    print(i)
-                vae(batch)
-
-            vae.summary()
-            # sys.exit()
 
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
@@ -445,7 +485,9 @@ class Embeddings:
             company, pres_list, qa_list, self.sa_dict, self.sa_decode_dict, vae
         )
 
-    def context_embed(self, company, pres_list, qa_list, embedding_dict, reconstruction_dict, vae):
+    def context_embed(
+        self, company, pres_list, qa_list, embedding_dict, reconstruction_dict, vae
+    ):
         """
         Stores the embeddings and reconstructions for the entire dataset.
 
@@ -537,9 +579,7 @@ class Embeddings:
         Returns:
             tf.Tensor: The reconstruction loss.
         """
-        return tf.reduce_sum(
-            tf.keras.losses.binary_crossentropy(x_true, x_pred), axis=(1, 2)
-        )
+        return tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred))
 
     def extract_embeddings(self, vae, x):
         """
@@ -557,14 +597,33 @@ class Embeddings:
         z = vae.decoder(zp)
         return zp, z
 
+
 class CustomSequential:
     def __init__(self):
+        """
+        Replacement for the tf.keras.Sequential class.
+        """
         self.layers = []
 
     def add(self, layer):
+        """
+        Adds a layer to the model.
+
+        Args:
+            layer (tf.keras.layers.Layer): The layer to add.
+        """
         self.layers.append(layer)
 
     def __call__(self, x):
+        """
+        Forward pass for the model.
+
+        Args:
+            x (tf.Tensor): The input data.
+
+        Returns:
+            tf.Tensor: The output tensor.
+        """
         for layer in self.layers:
             x = layer(x)
         return x

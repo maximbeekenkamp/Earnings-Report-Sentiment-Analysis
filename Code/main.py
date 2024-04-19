@@ -10,7 +10,7 @@ def main(embedding_type, singleCompany=False):
         "embedding_size": 256,
         "num_heads": 8,
         "num_layers": 6,
-        "seq_len": 128,
+        "seq_len": 256,
         "batch_size": 2,
 
         # VAE

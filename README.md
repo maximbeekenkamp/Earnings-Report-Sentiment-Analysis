@@ -132,6 +132,8 @@ In order to train these contextual embeddings we need something that constitutes
 1. We can ask the model to predict the next token in a sequence given the previous tokens. Although this is a common approach, our dataset is quite small and this approach would likely lead to overfitting.
 2. [Autoencoders](#autoencoders). Autoencoders ask the model to encode, and then decode the input data, with the difference between the input and output being the loss function. Given the small dataset, this approach is likely to be more successful.
 
+
+
 ### Document Similarity Analysis
 
 Once the textual content is represented using these embedding techniques, cosine similarity is calculated between corresponding segments of the presentation and the Q&A section. Specifically, for a given question answer pair, I take the section (paragraph) of the presentation which is most similar to the question, and then calculate the cosine similarity between that paragraph and the question's answer.
@@ -357,6 +359,8 @@ Where:
 - $z$ is the latent variable sampled from the distribution;
 - $\mathcal{N}(\mu, \sigma)$ is the Gaussian distribution with mean $\mu$ and standard deviation $\sigma$.
 
+Technically, a unsymmetrical variational autoencoder is used in this project. This largely follows the structures explained above, but with an unsymmetrical autencoder, the encoder and decoder components are not symmetrical. As shown by Sun et al. (2015) [^10], this can lead to better results. 
+
 ## Results
 
 <!-- TODO: Explain the results of the analysis. -->
@@ -437,3 +441,8 @@ Currently, there are two known issues with the code:
 [^9]:
     `Data/Images/VAE_Basic.png`: <br>
     By EugenioTL - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=107231101 <br><br>
+
+[^10]:
+    Sun, Yanan, Hua Mao, Quan Guo, and Zhang Yi. “Learning a Good Representation with Unsymmetrical Auto-Encoder.” Neural Computing and Applications 27, no. 5 (July 24, 2015): 1361–67. <br>
+    Paper: [10.1007/s00521-015-1939-3](https://doi.org/10.1007/s00521-015-1939-3).
+    (released: 24/07/2015)<br><br>

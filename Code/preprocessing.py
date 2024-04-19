@@ -2,12 +2,14 @@ import os
 import pandas as pd
 import re
 import nltk
+# nltk.download_shell()
+# nltk.data.path.append("/users/mbeekenk/.local/lib/python3.11/site-packages")
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-
-nltk.download("stopwords")
-nltk.download("punkt")
-nltk.download("wordnet")
+nltk.download('omw-1.4', download_dir="/users/mbeekenk/.local/lib/python3.11/site-packages")
+nltk.download("stopwords", download_dir="/users/mbeekenk/.local/lib/python3.11/site-packages")
+nltk.download("punkt", download_dir="/users/mbeekenk/.local/lib/python3.11/site-packages")
+nltk.download("wordnet", download_dir="/users/mbeekenk/.local/lib/python3.11/site-packages")
 
 
 class DataSet:
@@ -311,7 +313,7 @@ class DataSet:
                 all_unique_words.update(questions)
                 all_unique_words.update(answers)
 
-            vocab[company] = {word: i for i, word in enumerate(all_unique_words)}
+            vocab[company] = {word: i+1 for i, word in enumerate(all_unique_words)} # +1 leaves 0 for padding
 
         return vocab
 
