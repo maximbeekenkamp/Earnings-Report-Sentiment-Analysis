@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import tensorflow as tf
 
@@ -195,6 +196,10 @@ class TransformerBlock(tf.keras.layers.Layer):
         self.layer_norm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layer_norm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
+        self.dropout1 = tf.keras.layers.Dropout(0.1)
+        self.dropout2 = tf.keras.layers.Dropout(0.1)
+        self.dropout3 = tf.keras.layers.Dropout(0.1)
+
     @tf.function
     def call(self, inputs, context_seq):
         """
@@ -214,31 +219,31 @@ class TransformerBlock(tf.keras.layers.Layer):
         """
         if self.num_heads == 1:
             atten_out = self.self_atten(inputs, inputs, inputs)
-            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.dropout1(atten_out)
             atten_out = self.layer_norm1(inputs + atten_out)
 
             atten_out = self.self_context_atten(context_seq, context_seq, atten_out)
-            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.dropout2(atten_out)
             atten_out = self.layer_norm2(atten_out + atten_out)
 
         else:
             atten_out = self.multi_atten(inputs, inputs, inputs)
-            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.dropout1(atten_out)
             atten_out = self.layer_norm1(inputs + atten_out)
 
             atten_out = self.self_context_atten_multi(
                 context_seq, context_seq, atten_out
             )
-            atten_out = tf.keras.layers.Dropout(0.1)(atten_out)
+            atten_out = self.dropout2(atten_out)
             atten_out = self.layer_norm2(atten_out + atten_out)
 
         ff_out = self.ff_layer(atten_out)
-        ff_out = tf.keras.layers.Dropout(0.1)(ff_out)
+        ff_out = self.dropout3(ff_out)
         return self.layer_norm3(atten_out + ff_out)
 
 
 class PositionalEncoding(tf.keras.layers.Layer):
-    def __init__(self, vocab_size, embed_size, seq_len):
+    def __init__(self, embed_size, seq_len):
         """
         Class to add positional encoding to the input embeddings.
 
@@ -249,11 +254,6 @@ class PositionalEncoding(tf.keras.layers.Layer):
         """
         super().__init__()
         self.embed_size = embed_size
-
-        # simplifies shape issues
-        self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab_size + 1, output_dim=embed_size, mask_zero=True
-        )
 
         self.pos_encoding = self.positional_encoding(seq_len, embed_size)
 
@@ -267,8 +267,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
         Returns:
             tf.Tensor: Output tensor with positional encoding added.
         """
-        x = tf.where(tf.math.equal(x, np.NINF), tf.zeros_like(x), x)
-        embeddings = self.embedding(x) * (self.embed_size**0.5)
+        embeddings = x * (self.embed_size**0.5)
         embeddings += self.pos_encoding[tf.newaxis, : tf.shape(x)[1], :]
         return embeddings
 
@@ -359,9 +358,7 @@ class SA_Encoder(tf.keras.layers.Layer):
         self.seq_len = training_vars["seq_len"]
         self.num_layers = training_vars["num_layers"]
         self.vocab_size = training_vars["vocab_size"]
-        self.positional_encoding = PositionalEncoding(
-            self.vocab_size, self.embedding_size, self.seq_len
-        )
+        self.positional_encoding = PositionalEncoding(self.embedding_size, self.seq_len)
         self.transformer_blocks = [
             TransformerBlock(self.embedding_size, self.num_heads)
             for _ in range(self.num_layers)
@@ -397,9 +394,7 @@ class SA_Decoder(tf.keras.layers.Layer):
         self.seq_len = training_vars["seq_len"]
         self.num_layers = training_vars["num_layers"]
         self.vocab_size = training_vars["vocab_size"]
-        self.positional_encoding = PositionalEncoding(
-            self.vocab_size, self.embedding_size, self.seq_len
-        )
+        self.positional_encoding = PositionalEncoding(self.embedding_size, self.seq_len)
         self.transformer_blocks = [
             TransformerBlock(self.embedding_size, self.num_heads)
             for _ in range(self.num_layers)

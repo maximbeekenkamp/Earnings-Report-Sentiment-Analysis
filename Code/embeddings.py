@@ -112,6 +112,8 @@ class Embeddings:
         self.sa_decode_dict = {}
 
         self.training_vars = training_vars
+        self.non_trainable_emmbedding = None
+        self.company_tokens = None
 
     def embedding_matrix(self, company, mode):
         """
@@ -136,12 +138,14 @@ class Embeddings:
             for i, pres in enumerate(pres_list):
                 self.tfidf(company, pres, qa_list[i], i)
         else:
-            company_tokens = Tokens(self.corpus, company, total_bool=True)
-            self.training_vars["vocab_size"] = len(company_tokens.word_to_token_dict)
-            train_data, max_seq_1 = company_tokens.tokenise(
+            self.company_tokens = Tokens(self.corpus, company, total_bool=True)
+            self.training_vars["vocab_size"] = len(
+                self.company_tokens.word_to_token_dict
+            )
+            train_data, max_seq_1 = self.company_tokens.tokenise(
                 self.pres_train_list, self.qa_train_list
             )
-            val_data, max_seq_2 = company_tokens.tokenise(
+            val_data, max_seq_2 = self.company_tokens.tokenise(
                 self.pres_test_list, self.qa_test_list
             )
 
@@ -150,27 +154,36 @@ class Embeddings:
                 max_sequence_len = self.training_vars["seq_len"]
             self.training_vars["seq_len"] = max_sequence_len
 
-            train_data = tf.keras.preprocessing.sequence.pad_sequences(
+            self.non_trainable_emmbedding = tf.keras.layers.Embedding(
+                input_dim=self.training_vars["vocab_size"] + 1,
+                output_dim=self.training_vars["embedding_size"],
+                # mask_zero=True,
+                trainable=False,
+            )
+
+            train_data = tf.keras.utils.pad_sequences(
                 train_data,
-                maxlen=max_sequence_len,
+                maxlen=self.training_vars["seq_len"],
                 padding="post",
                 truncating="post",
-                value=np.NINF,
+                value=0,
                 dtype="float32",
             )
+            train_data = self.non_trainable_emmbedding(train_data)
             train_data = tf.data.Dataset.from_tensor_slices(
                 train_data, name=f"Train_{company}"
             ).batch(self.training_vars["batch_size"], drop_remainder=True)
             train_data = train_data.shuffle(len(train_data))
 
-            val_data = tf.keras.preprocessing.sequence.pad_sequences(
+            val_data = tf.keras.utils.pad_sequences(
                 val_data,
-                maxlen=max_sequence_len,
+                maxlen=self.training_vars["seq_len"],
                 padding="post",
                 truncating="post",
-                value=np.NINF,
+                value=0,
                 dtype="float32",
             )
+            val_data = self.non_trainable_emmbedding(val_data)
             val_data = tf.data.Dataset.from_tensor_slices(
                 val_data, name=f"Train_{company}"
             ).batch(self.training_vars["batch_size"], drop_remainder=True)
@@ -453,7 +466,6 @@ class Embeddings:
             decoder = CustomSequential()
 
             encoder.add(MHA(training_vars))
-            encoder.add(tf.keras.layers.Reshape((-1,)))
             encoder.add(
                 tf.keras.layers.Dense(
                     training_vars["embedding_size"], activation="relu"
@@ -480,6 +492,10 @@ class Embeddings:
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
 
+            # to allow @tf.function
+            dummy = [["dummy_word1"], ["dummy_word2"]]
+            self.extract_embeddings(vae, dummy)
+
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
                 rec_loss=self.rec_loss,
@@ -500,7 +516,7 @@ class Embeddings:
             return vae
 
         vae = train(train_data, val_data, training_vars)
-        sys.exit()
+
         self.sa_dict, self.sa_decode_dict = self.context_embed(
             company, pres_list, qa_list, self.sa_dict, self.sa_decode_dict, vae
         )
@@ -528,10 +544,10 @@ class Embeddings:
         Returns:
             dict, dict: A tuple containing the embedding and reconstruction dictionaries.
         """
-        # TODO: not handling padding tokens correctly
         embedding_dict[company] = {}
         reconstruction_dict[company] = {}
         for report_num, (pres, qa) in enumerate(zip(pres_list, qa_list)):
+            print(f"Extracting embeddings from report {report_num} for {company}")
             embedding_dict[company][report_num] = {}
             reconstruction_dict[company][report_num] = {}
             for para in pres:
@@ -547,7 +563,7 @@ class Embeddings:
                     output_msg += (
                         f"\n Company: {company} \n Report number: {report_num}"
                     )
-                    # output_msg += f"\n {para}"
+                    output_msg += f"\n {para}"
                     raise ValueError(f"{output_msg}")
             for ques, ans in qa:
                 try:
@@ -572,7 +588,7 @@ class Embeddings:
                     output_msg += (
                         f"\n Company: {company} \n Report number: {report_num}"
                     )
-                    # output_msg += f"\n QUES: {ques} \n ANS: {ans}"
+                    output_msg += f"\n QUES: {ques} \n ANS: {ans}"
                     raise ValueError(f"{output_msg}")
         return embedding_dict, reconstruction_dict
 
@@ -600,7 +616,9 @@ class Embeddings:
         Returns:
             tf.Tensor: The reconstruction loss.
         """
-        return tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred))
+        # TODO: rec loss shouldnt be using binary cross entropy
+        error = tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred))
+        return tf.reduce_sum(error)
 
     def extract_embeddings(self, vae, x):
         """
@@ -613,6 +631,32 @@ class Embeddings:
         Returns:
             tuple: A tuple containing the embeddings and the reconstruction.
         """
+        if isinstance(x[0], list):  # dummy variable to allow @tf.function
+            for i, para in enumerate(x):
+                for j, word in enumerate(para):
+                    x[i][j] = 0
+        else:
+            for i, word in enumerate(x):
+                try:
+                    x[i] = self.company_tokens.word_to_token_dict[word]
+                except KeyError:
+                    x[i] = 0
+            x = [x, [0] * self.training_vars["seq_len"]]
+
+        assert (
+            len(x) == self.training_vars["batch_size"]
+        ), "extract_embeddings: shape error in x"
+
+        x = tf.keras.utils.pad_sequences(
+            x,
+            maxlen=self.training_vars["seq_len"],
+            padding="post",
+            truncating="post",
+            value=0,
+            dtype="float32",
+        )
+        x = self.non_trainable_emmbedding(x)
+
         xp = vae.encoder(x)
         zp = vae.latent_ops(xp)
         z = vae.decoder(zp)

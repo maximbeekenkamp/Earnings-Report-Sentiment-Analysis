@@ -55,24 +55,24 @@ class Runner:
 
                 num_reports = len(pres_train) + len(pres_test)
                 if self.embedding_type == "tfidf":
-                    emmbedings = embeddings.embedding_matrix(company, "tfidf")
+                    embeddings.embedding_matrix(company, "tfidf")
                     similarity = Similarity(
-                        num_reports, emmbedings.tfidf_dict, sim_dict, sim_list
+                        num_reports, embeddings.tfidf_dict, sim_dict, sim_list
                     )
                 elif self.embedding_type == "lstm":
-                    embeddings = embeddings.embedding_matrix(company, "lstm")
+                    embeddings.embedding_matrix(company, "lstm")
                     similarity = Similarity(
-                        num_reports, emmbedings.lstm_dict, sim_dict, sim_list
+                        num_reports, embeddings.lstm_dict, sim_dict, sim_list
                     )
                 elif self.embedding_type == "gru":
-                    embeddings = embeddings.embedding_matrix(company, "gru")
+                    embeddings.embedding_matrix(company, "gru")
                     similarity = Similarity(
-                        num_reports, emmbedings.gru_dict, sim_dict, sim_list
+                        num_reports, embeddings.gru_dict, sim_dict, sim_list
                     )
                 elif self.embedding_type == "sa":
-                    embeddings = embeddings.embedding_matrix(company, "sa")
+                    embeddings.embedding_matrix(company, "sa")
                     similarity = Similarity(
-                        num_reports, emmbedings.sa_dict, sim_dict, sim_list
+                        num_reports, embeddings.sa_dict, sim_dict, sim_list
                     )
 
                 sim_dict[company] = similarity.similarity_dict
@@ -111,25 +111,17 @@ class Runner:
 
             num_reports = len(pres_train) + len(pres_test)
             if self.embedding_type == "tfidf":
-                emmbedings = embeddings.embedding_matrix(company, "tfidf")
-                similarity = Similarity(
-                    num_reports, emmbedings.tfidf_dict, sim_dict, sim_list
-                )
+                embeddings.embedding_matrix(company, "tfidf")
+                similarity = Similarity(num_reports, embeddings.tfidf_dict, {}, [])
             elif self.embedding_type == "lstm":
-                embeddings = embeddings.embedding_matrix(company, "lstm")
-                similarity = Similarity(
-                    num_reports, emmbedings.lstm_dict, sim_dict, sim_list
-                )
+                embeddings.embedding_matrix(company, "lstm")
+                similarity = Similarity(num_reports, embeddings.lstm_dict, {}, [])
             elif self.embedding_type == "gru":
-                embeddings = embeddings.embedding_matrix(company, "gru")
-                similarity = Similarity(
-                    num_reports, emmbedings.gru_dict, sim_dict, sim_list
-                )
+                embeddings.embedding_matrix(company, "gru")
+                similarity = Similarity(num_reports, embeddings.gru_dict, {}, [])
             elif self.embedding_type == "sa":
-                embeddings = embeddings.embedding_matrix(company, "sa")
-                similarity = Similarity(
-                    num_reports, emmbedings.sa_dict, sim_dict, sim_list
-                )
+                embeddings.embedding_matrix(company, "sa")
+                similarity = Similarity(num_reports, embeddings.sa_dict, {}, [])
 
             similarity.sim_score(company)
 

@@ -378,18 +378,28 @@ Technically, a unsymmetrical variational autoencoder is used in this project. Th
 
 The large error bars suggest that, according to the TF-IDF embeddings, the similarity between the presentation and Q&A sections varies greatly between each report. 
 
-Company | TF-IDF Embeddings
---------|------------------
-Apple   | 0.00620438641453739
-Micron  | 0.005058904864883506
-Google  | 0.004305539921222904
-ASML    | 0.0040679289470081145
-AMD     | 0.003693839986579608
-Cisco   | 0.0036762236455800375
-Microsoft | 0.003374062957867656
-Intel   | 0.0027762305489947518
-NVIDIA  | 0.0025780134669955166
-Amazon  | 0.0015476103006760518
+<p align="center">
+    <img src="Data/Images/SA_barchart.png" alt="Transformer Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for Transformer Contextual Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+The error bars for the transformer embeddings are much smaller, suggesting that the transformer embeddings are more consistent in their similarity scores. Moreover, the transformer embeddings have a higher average similarity score than the TF-IDF embeddings, exhibiting the strength of contextual embeddings in capturing the relationship between the presentation and Q&A sections.
+
+
+| Company   | TF-IDF Embeddings    | Transformer Similarity Score |
+|-----------|----------------------|------------------------------|
+| Apple     | 0.00620438641453739  | 0.26002272963523865         |
+| AMD       | 0.003693839986579608 | 0.27665042877197266         |
+| Amazon    | 0.0015476103006760518| 0.26905152201652527         |
+| ASML      | 0.0040679289470081145| 0.2442130297422409          |
+| Cisco     | 0.0036762236455800375| 0.22546233236789703         |
+| Google    | 0.004305539921222904 | 0.2715793550014496          |
+| Intel     | 0.0027762305489947518| 0.21826229989528656         |
+| Microsoft | 0.003374062957867656 | 0.31099265813827515         |
+| Micron    | 0.005058904864883506 | 0.2852003872394562          |
+| NVIDIA    | 0.0025780134669955166| 0.28165680170059204         |
+
 
 ## Conclusion
 

@@ -14,9 +14,8 @@ def main(embedding_type, singleCompany=False):
         "batch_size": 2,
         # VAE
         "latent_dim": 128,
-        "vae epochs": 2,
-        "vae batch_size": 2,
-        "learning_rate": 0.005,
+        "vae epochs": 5,
+        "learning_rate": 0.001,
     }
 
     network = Runner(embedding_type, training_vars, singleCompany)
