@@ -1,7 +1,6 @@
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 import tensorflow as tf
-import sys
+from tqdm import tqdm
 
 from autoencoder import VAE
 from rnn import MyLSTM, MyGRU
@@ -546,8 +545,7 @@ class Embeddings:
         """
         embedding_dict[company] = {}
         reconstruction_dict[company] = {}
-        for report_num, (pres, qa) in enumerate(zip(pres_list, qa_list)):
-            print(f"Extracting embeddings from report {report_num} for {company}")
+        for report_num, (pres, qa) in enumerate(zip(tqdm(pres_list, desc=f"Extracting embeddings for {company}"), qa_list)):
             embedding_dict[company][report_num] = {}
             reconstruction_dict[company][report_num] = {}
             for para in pres:

@@ -23,6 +23,7 @@ This code was written using Python 3.11.4, and requires the following packages:
 - matplotlib
 - scikit-learn
 - nltk
+- tqdm
 
 >[!TIP]
 >If you don't have these packages installed, refer to the **installation guide below** for a bash script that will install all of these packages.
