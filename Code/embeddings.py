@@ -290,7 +290,6 @@ class Embeddings:
 
             encoder.add(
                 PositionalEncoding(
-                    training_vars["vocab_size"],
                     training_vars["embedding_size"],
                     training_vars["seq_len"],
                 )
@@ -317,6 +316,10 @@ class Embeddings:
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
 
+            # to allow @tf.function
+            dummy = [["dummy_word1"], ["dummy_word2"]]
+            self.extract_embeddings(vae, dummy)
+            
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
                 rec_loss=self.rec_loss,
@@ -378,7 +381,6 @@ class Embeddings:
 
             encoder.add(
                 PositionalEncoding(
-                    training_vars["vocab_size"],
                     training_vars["embedding_size"],
                     training_vars["seq_len"],
                 )
@@ -405,6 +407,10 @@ class Embeddings:
             logvar_layers = tf.keras.layers.Dense(training_vars["latent_dim"])
             vae = VAE(encoder, decoder, mu_layers, logvar_layers)
 
+            # to allow @tf.function
+            dummy = [["dummy_word1"], ["dummy_word2"]]
+            self.extract_embeddings(vae, dummy)
+            
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
                 rec_loss=self.rec_loss,
@@ -614,7 +620,6 @@ class Embeddings:
         Returns:
             tf.Tensor: The reconstruction loss.
         """
-        # TODO: rec loss shouldnt be using binary cross entropy
         error = tf.reduce_sum(tf.keras.losses.binary_crossentropy(x_true, x_pred))
         return tf.reduce_sum(error)
 

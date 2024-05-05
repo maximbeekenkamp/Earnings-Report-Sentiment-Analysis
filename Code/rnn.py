@@ -103,8 +103,8 @@ class MyLSTM(tf.keras.layers.Layer):
             outputs.append(ht)
 
         outputs = tf.stack(outputs, axis=1)
-
-        return outputs, ht, ct
+        # choosing to only return the entire sequence, not the final hidden state and cell state
+        return outputs #, ht, ct
 
     def compute_output_shape(self, input_shape):
         """
@@ -220,8 +220,9 @@ class MyGRU(tf.keras.layers.Layer):
             outputs.append(ht)
 
         outputs = tf.stack(outputs, axis=1)
-
-        return outputs, ht
+        
+        # choosing to only return the entire sequence, not the final hidden state
+        return outputs #, ht
 
     def compute_output_shape(self, input_shape):
         """
