@@ -380,26 +380,43 @@ Technically, a unsymmetrical variational autoencoder is used in this project. Th
 The large error bars suggest that, according to the TF-IDF embeddings, the similarity between the presentation and Q&A sections varies greatly between each report. 
 
 <p align="center">
+    <img src="Data/Images/GRU_barchart.png" alt="GRU Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for GRU Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+The GRU embeddings represent the first contextual embeddings used in this project. Immediately you see a notable improvement in the average similarity score compared to the TF-IDF embeddings, with roughly two orders of magnitude improvement across the board. The error bars are also smaller, suggesting that the GRU embeddings are more consistent in their similarity scores.
+
+<p align="center">
+    <img src="Data/Images/LSTM_barchart.png" alt="LSTM Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for LSTM Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+The improvements shown in the GRU embeddings are further improved upon by the LSTM embeddings. The LSTM embeddings have a higher average similarity score than the GRU embeddings, suggesting that the LSTM embeddings are more effective at capturing the relationship between the presentation and Q&A sections.
+
+
+<p align="center">
     <img src="Data/Images/SA_barchart.png" alt="Transformer Scores Bar Chart" style="max-width: 90%;"/>
     <br>
     <em> Cosine Similarity Scores for Transformer Contextual Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
 
-The error bars for the transformer embeddings are much smaller, suggesting that the transformer embeddings are more consistent in their similarity scores. Moreover, the transformer embeddings have a higher average similarity score than the TF-IDF embeddings, exhibiting the strength of contextual embeddings in capturing the relationship between the presentation and Q&A sections.
+The transformer embeddings once again show an improvement over the LSTM embeddings, with the transformer embeddings having the highest average similarity score of all the embeddings. This suggests that the transformer embeddings are the most effective at capturing the relationship between the presentation and Q&A sections. However, the improvement is not as significant as the improvement from the TF-IDF embeddings to the GRU embeddings, suggesting that the RNN embeddings are already quite effective at capturing the relationship between the presentation and Q&A sections. This plateauing of performance can be seen as a sign that we are converging on the idea that the presentation and Q&A sections are not as similar as we might have initially thought. Warranting further investigation.
 
 
-| Company   | TF-IDF Embeddings    | Transformer Similarity Score |
-|-----------|----------------------|------------------------------|
-| Apple     | 0.00620438641453739  | 0.26002272963523865         |
-| AMD       | 0.003693839986579608 | 0.27665042877197266         |
-| Amazon    | 0.0015476103006760518| 0.26905152201652527         |
-| ASML      | 0.0040679289470081145| 0.2442130297422409          |
-| Cisco     | 0.0036762236455800375| 0.22546233236789703         |
-| Google    | 0.004305539921222904 | 0.2715793550014496          |
-| Intel     | 0.0027762305489947518| 0.21826229989528656         |
-| Microsoft | 0.003374062957867656 | 0.31099265813827515         |
-| Micron    | 0.005058904864883506 | 0.2852003872394562          |
-| NVIDIA    | 0.0025780134669955166| 0.28165680170059204         |
+| Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
+|-----------|----------------------|--------------------|--------------------|------------------------|
+| Apple     | 0.00620438641453739  | 0.2543580234050751 | 0.2044840306043625 | 0.26002272963523865    |
+| AMD       | 0.003693839986579608 | 0.19325938820838928| 0.21022605895996094| 0.27665042877197266    |
+| Amazon    | 0.0015476103006760518| 0.21068359911441803| 0.20251555740833282| 0.26905152201652527    |
+| ASML      | 0.0040679289470081145| 0.21110592782497406| 0.23345239460468292| 0.2442130297422409     |
+| Cisco     | 0.0036762236455800375| 0.2133038192987442 | 0.19871598482131958| 0.22546233236789703    |
+| Google    | 0.004305539921222904 | 0.1957850456237793 | 0.1893100142478943 | 0.2715793550014496     |
+| Intel     | 0.0027762305489947518| 0.20789632201194763| 0.20047979056835175| 0.21826229989528656    |
+| Microsoft | 0.003374062957867656 | 0.2245478332042694 | 0.17322051525115967| 0.31099265813827515    |
+| Micron    | 0.005058904864883506 | 0.210518479347229  | 0.22128818929195404| 0.2852003872394562     |
+| NVIDIA    | 0.0025780134669955166| 0.20786771178245544| 0.2084471434354782 | 0.28165680170059204    |
 
 
 ## Conclusion

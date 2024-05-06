@@ -319,7 +319,7 @@ class Embeddings:
             # to allow @tf.function
             dummy = [["dummy_word1"], ["dummy_word2"]]
             self.extract_embeddings(vae, dummy)
-            
+
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
                 rec_loss=self.rec_loss,
@@ -410,7 +410,7 @@ class Embeddings:
             # to allow @tf.function
             dummy = [["dummy_word1"], ["dummy_word2"]]
             self.extract_embeddings(vae, dummy)
-            
+
             vae.compile(
                 optimizer=tf.keras.optimizers.Adam(training_vars["learning_rate"]),
                 rec_loss=self.rec_loss,
@@ -551,7 +551,9 @@ class Embeddings:
         """
         embedding_dict[company] = {}
         reconstruction_dict[company] = {}
-        for report_num, (pres, qa) in enumerate(zip(tqdm(pres_list, desc=f"Extracting embeddings for {company}"), qa_list)):
+        for report_num, (pres, qa) in enumerate(
+            zip(tqdm(pres_list, desc=f"Extracting embeddings for {company}"), qa_list)
+        ):
             embedding_dict[company][report_num] = {}
             reconstruction_dict[company][report_num] = {}
             for para in pres:
