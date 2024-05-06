@@ -405,7 +405,7 @@ The improvements shown in the GRU embeddings are further improved upon by the LS
 The transformer embeddings once again show an improvement over the LSTM embeddings, with the transformer embeddings having the highest average similarity score of all the embeddings. This suggests that the transformer embeddings are the most effective at capturing the relationship between the presentation and Q&A sections. However, the improvement is not as significant as the improvement from the TF-IDF embeddings to the GRU embeddings, suggesting that the RNN embeddings are already quite effective at capturing the relationship between the presentation and Q&A sections. This plateauing of performance can be seen as a sign that we are converging on the idea that the presentation and Q&A sections are not as similar as we might have initially thought. Warranting further investigation.
 
 
-| Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
+<!-- | Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
 |-----------|----------------------|--------------------|--------------------|------------------------|
 | Apple     | 0.00620438641453739  | 0.2543580234050751 | 0.2044840306043625 | 0.26002272963523865    |
 | AMD       | 0.003693839986579608 | 0.19325938820838928| 0.21022605895996094| 0.27665042877197266    |
@@ -416,7 +416,20 @@ The transformer embeddings once again show an improvement over the LSTM embeddin
 | Intel     | 0.0027762305489947518| 0.20789632201194763| 0.20047979056835175| 0.21826229989528656    |
 | Microsoft | 0.003374062957867656 | 0.2245478332042694 | 0.17322051525115967| 0.31099265813827515    |
 | Micron    | 0.005058904864883506 | 0.210518479347229  | 0.22128818929195404| 0.2852003872394562     |
-| NVIDIA    | 0.0025780134669955166| 0.20786771178245544| 0.2084471434354782 | 0.28165680170059204    |
+| NVIDIA    | 0.0025780134669955166| 0.20786771178245544| 0.2084471434354782 | 0.28165680170059204    | -->
+
+| Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
+|-----------|----------------------|--------------------|--------------------|------------------------|
+| Apple     | 0.00620              | 0.254              | 0.204              | 0.260                  |
+| AMD       | 0.00369              | 0.193              | 0.210              | 0.277                  |
+| Amazon    | 0.00155              | 0.211              | 0.203              | 0.269                  |
+| ASML      | 0.00407              | 0.211              | 0.233              | 0.244                  |
+| Cisco     | 0.00368              | 0.213              | 0.199              | 0.225                  |
+| Google    | 0.00431              | 0.196              | 0.189              | 0.272                  |
+| Intel     | 0.00278              | 0.208              | 0.200              | 0.218                  |
+| Microsoft | 0.00337              | 0.225              | 0.173              | 0.311                  |
+| Micron    | 0.00506              | 0.211              | 0.221              | 0.285                  |
+| NVIDIA    | 0.00258              | 0.208              | 0.208              | 0.282                  |
 
 
 ## Conclusion
