@@ -436,6 +436,12 @@ The transformer embeddings once again show an improvement over the LSTM embeddin
 
 <!-- TODO: Summarise the findings and suggest future expansion. -->
 
+## Looking Forward
+Beyond the scope of this project, there are a number of ways in which this project could be expanded. Some of ideas that I already have are:
+
+### Contrastive Loss
+By integrating the similarity calculations into the loss function, we can explicitly train the model to maximise the similarity between the presentation and Q&A sections. Specifically, to maximise the similarity between a question and the section of the presentation that is most similar to that question. This would likely lead to more accurate embeddings without impacting the performance of the similarity calculations, which are calculated between the answer and the aforementioned section of the presentation.
+
 ## Known Issues
 Currently, there are two known issues with the code:
 1. [`preprocessing.py`](Code/preprocessing.py), func: `clean_data` Currently there are three cases in which the there will be a question with no associated answer. In these cases the question answer pair are discarded.
