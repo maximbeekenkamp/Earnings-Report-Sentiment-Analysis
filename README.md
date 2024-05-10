@@ -387,8 +387,6 @@ Technically, a unsymmetrical variational autoencoder is used in this project. Th
 
 ## Results
 
-<!-- TODO: Explain the results of the analysis. -->
-
 **Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:**
 
 
@@ -439,18 +437,21 @@ The transformer embeddings once again show an improvement over the LSTM embeddin
 | Micron    | 0.005058904864883506 | 0.210518479347229  | 0.22128818929195404| 0.2852003872394562     |
 | NVIDIA    | 0.0025780134669955166| 0.20786771178245544| 0.2084471434354782 | 0.28165680170059204    | -->
 
-| Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
-|-----------|----------------------|--------------------|--------------------|------------------------|
-| Apple     | 0.00620              | 0.254              | 0.204              | 0.260                  |
-| AMD       | 0.00369              | 0.193              | 0.210              | 0.277                  |
-| Amazon    | 0.00155              | 0.211              | 0.203              | 0.269                  |
-| ASML      | 0.00407              | 0.211              | 0.233              | 0.244                  |
-| Cisco     | 0.00368              | 0.213              | 0.199              | 0.225                  |
-| Google    | 0.00431              | 0.196              | 0.189              | 0.272                  |
-| Intel     | 0.00278              | 0.208              | 0.200              | 0.218                  |
-| Microsoft | 0.00337              | 0.225              | 0.173              | 0.311                  |
-| Micron    | 0.00506              | 0.211              | 0.221              | 0.285                  |
-| NVIDIA    | 0.00258              | 0.208              | 0.208              | 0.282                  |
+| Company                           | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
+|-----------------------------------|----------------------|--------------------|--------------------|------------------------|
+| Apple                             | 0.00620              | 0.254              | 0.204              | 0.260                  |
+| AMD                               | 0.00369              | 0.193              | 0.210              | 0.277                  |
+| Amazon                            | 0.00155              | 0.211              | 0.203              | 0.269                  |
+| ASML                              | 0.00407              | 0.211              | 0.233              | 0.244                  |
+| Cisco                             | 0.00368              | 0.213              | 0.199              | 0.225                  |
+| Google                            | 0.00431              | 0.196              | 0.189              | 0.272                  |
+| Intel                             | 0.00278              | 0.208              | 0.200              | 0.218                  |
+| Microsoft                         | 0.00337              | 0.225              | 0.173              | 0.311                  |
+| Micron                            | 0.00506              | 0.211              | 0.221              | 0.285                  |
+| NVIDIA                            | 0.00258              | 0.208              | 0.208              | 0.282                  |
+|-----------------------------------|----------------------|--------------------|--------------------|------------------------|
+| **Average**                       | **0.00373**          | **0.213**          | **0.204**          | **0.264**              |
+| **Normalised Standard Deviation** | **0.352**            | **0.0798**         | **0.0805**         | **0.107**              |
 
 
 ## Conclusion
