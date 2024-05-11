@@ -16,3 +16,4 @@ fi
 pip3 install tensorflow scipy pandas matplotlib sklearn nltk tqdm
 
 echo "Packages installed successfully."
+
