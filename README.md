@@ -387,43 +387,9 @@ Technically, a unsymmetrical variational autoencoder is used in this project. Th
 
 ## Results
 
-**Average Cosine Similarity Scores between Presentation and Q&A sections for all companies:**
+The table below displays the cosine similarity scores obtained using the three different text embedding methods.
 
-
-<p align="center">
-    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
-    <br>
-    <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
-</p>
-
-The large error bars suggest that, according to the TF-IDF embeddings, the similarity between the presentation and Q&A sections varies greatly between each report. 
-
-<p align="center">
-    <img src="Data/Images/GRU_barchart.png" alt="GRU Scores Bar Chart" style="max-width: 90%;"/>
-    <br>
-    <em> Cosine Similarity Scores for GRU Embeddings, error bars represent the minimum and maximum scores.</em>
-</p>
-
-The GRU embeddings represent the first contextual embeddings used in this project. Immediately you see a notable improvement in the average similarity score compared to the TF-IDF embeddings, with roughly two orders of magnitude improvement across the board. The error bars are also smaller, suggesting that the GRU embeddings are more consistent in their similarity scores.
-
-<p align="center">
-    <img src="Data/Images/LSTM_barchart.png" alt="LSTM Scores Bar Chart" style="max-width: 90%;"/>
-    <br>
-    <em> Cosine Similarity Scores for LSTM Embeddings, error bars represent the minimum and maximum scores.</em>
-</p>
-
-The improvements shown in the GRU embeddings are further improved upon by the LSTM embeddings. The LSTM embeddings have a higher average similarity score than the GRU embeddings, suggesting that the LSTM embeddings are more effective at capturing the relationship between the presentation and Q&A sections.
-
-
-<p align="center">
-    <img src="Data/Images/SA_barchart.png" alt="Transformer Scores Bar Chart" style="max-width: 90%;"/>
-    <br>
-    <em> Cosine Similarity Scores for Transformer Contextual Embeddings, error bars represent the minimum and maximum scores.</em>
-</p>
-
-The transformer embeddings once again show an improvement over the LSTM embeddings, with the transformer embeddings having the highest average similarity score of all the embeddings. This suggests that the transformer embeddings are the most effective at capturing the relationship between the presentation and Q&A sections. However, the improvement is not as significant as the improvement from the TF-IDF embeddings to the GRU embeddings, suggesting that the RNN embeddings are already quite effective at capturing the relationship between the presentation and Q&A sections. This plateauing of performance can be seen as a sign that we are converging on the idea that the presentation and Q&A sections are not as similar as we might have initially thought. Warranting further investigation.
-
-
+**Average cosine similarity scores between Presentation and Q&A sections for all companies:**
 <!-- | Company   | TF-IDF Embeddings    | GRU Embeddings     | LSTM Embeddings    | Transformer Embeddings |
 |-----------|----------------------|--------------------|--------------------|------------------------|
 | Apple     | 0.00620438641453739  | 0.2543580234050751 | 0.2044840306043625 | 0.26002272963523865    |
@@ -453,10 +419,49 @@ The transformer embeddings once again show an improvement over the LSTM embeddin
 | **Average**                       | **0.00373**          | **0.213**          | **0.204**          | **0.264**              |
 | **Normalised Standard Deviation** | **0.352**            | **0.0798**         | **0.0805**         | **0.107**              |
 
+The most striking component of this table is the substantial jump in score from the classical to the learned embeddings. TF-IDF embeddings (below) consistently showcase lower similarity scores across all companies. This observation suggests that while TF-IDF embeddings provide useful insights for large corpora, and provide a useful fundamental representation of textual data, they struggle to capture the nuanced semantic relationships present within earnings call transcripts. What this means is that these embeddings aren't representative of the answer-paragraph pair. When looking at the normalised standard deviation, we see that TF-IDF embeddings have standard deviations 3 to 4.5 times greater than the learned embeddings.
+
+<p align="center">
+    <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for TF-IDF Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+On the other hand, all of the learned embeddings performed exceptionally well with a two order of magnitude improvement relative to the TF-IDF embeddings. The GRU embeddings represent the first contextual embeddings used in this project, see below. Immediately you see a notable improvement in the average similarity score compared to the TF-IDF embeddings, with roughly two orders of magnitude improvement across the board. As shown visually by the small error bars, GRU embeddings had the lowest normalised standard deviation indicating that the GRU embeddings provided robust similarity scores.
+
+<p align="center">
+    <img src="Data/Images/GRU_barchart.png" alt="GRU Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for GRU Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+The improvements shown in the GRU embeddings are replicated improved upon by the LSTM embeddings:
+
+<p align="center">
+    <img src="Data/Images/LSTM_barchart.png" alt="LSTM Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for LSTM Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+The transformer embeddings, below, have the highest similarity scores albeit with slightly higher standard deviations to the RNNs. This is testament to their ability to generate contextual embeddings, even from a limited dataset, and suggests that they are the most effective at capturing the relationship between the presentation and Q&A sections. However, the improvement is not as significant as the improvement from the TF-IDF embeddings to the GRU embeddings, this plateauing of performance can be seen as a sign that we are converging on an effective representation, hinting at the idea that the presentation and Q&A sections are not as similar as we might have initially thought. This warrants further investigation with a pre-trained model, before making any definitive statements.
+
+<p align="center">
+    <img src="Data/Images/SA_barchart.png" alt="Transformer Scores Bar Chart" style="max-width: 90%;"/>
+    <br>
+    <em> Cosine Similarity Scores for Transformer Contextual Embeddings, error bars represent the minimum and maximum scores.</em>
+</p>
+
+Although the methods aren't rigorous enough to make any concrete statements about the contextual meaning of the results, there are some interesting insights: The plateauing of performance could indicate that the results are close to the correct value, if this is the case the low similarity scores are suggestive of the idea that the presentation and Q\&A sections are not as similar as we might have initially thought. Secondly if we rank the companies based on their similarity scores, NVIDIA, Apple, and ASML are consistently at the top with average rankings of 3.00, 3.50, and 4.25 respectively. On the other end of this metric Cisco and Google (tied), Amazon, and Intel have the lowest average rankings of 6.50, 6.75, and 8.00. When looking only at the contextual embeddings we see similar results: Micron in first, and then Apple, ASML, and Microsoft all tied for second (Microsoft was 4th in the full rankings), with average rankings of 3.33 and 4.33. At the bottom we had Cisco, Google and Intel, with average rankings of 6.67, 7.67, and 8.00. Looking at these results, alongside the bar charts we see that across methods the models rank the companies in a similar fashion, suggesting that there is a latent connection with some companies consistently revealing more during their Q&As than others. This however warrants further investigation with a pre-trained model before making any definitive statements.
 
 ## Conclusion
 
-<!-- TODO: Summarise the findings and suggest future expansion. -->
+The analysis of cosine similarity scores corroborates the existing body of literature demonstrating the effectiveness of these techniques in capturing semantic relationships. Moreover, my findings underscore the substantial improvement in performance offered by learned embeddings, and specifically the positional encoding, when compared to classical methods such as TF-IDF embeddings.
+
+Learned contextual embeddings provided an substantial improvement in both the variance and the overall score for the embeddings highlighting their prevalence in state-of-the-art models today. Transformer's self-attention mechanism enables them to capture contextual information more effectively across longer sequences of text, and the multi-headed attention mechanism allows the model to focus on different parts of the input sequence simultaneously, capturing dependencies between distant words efficiently, leading to more robust representations. Although this corpus was not large enough to replicate these findings, the transformer's ability to parallelise computation allows for greater scalability allowing for the model to be trained on larger datasets. Anecdotally, the transformer model seemed to train faster than the RNNs, which is likely due to the parallelisation of the attention mechanism which can be leveraged by the Oscar's GPUs. Thank you Brown!
+
+The plateauing of performance observed with transformer embeddings alongside the loosely consistent internal rankings of companies across methods suggests that there might be a meaningful disparity between the information gained from the presentation versus the Q&A.
+
+Overall, the results highlight the importance of selecting appropriate text embedding methods for analysing earnings call transcripts. Future research could explore the integration of pre-trained models and transitioning the focus towards sentiment analysis and disparity. Given the promising results hinted at by the current state of the project there is reason to believe that by leveraging advanced text embedding techniques, researchers can gain deeper insights into the dynamics of corporate communications and investor relations, ultimately contributing to more informed decision-making processes in financial markets.
 
 ## Looking Forward
 Beyond the scope of this project, there are a number of ways in which this project could be expanded. Here are some of ideas that I already have are:
@@ -474,7 +479,7 @@ Currently, there are two known issues with the code:
 ## References
 [^1]:
     `Data/Dataset/`: <br>
-    [Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) (released: 03/07/2024) <br><br>
+    [Quarterly Earnings Call Transcripts for 10 NASDAQ companies from 2016-2020](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) (released: 03/07/2023) <br><br>
 [^2]:
     `Data/Images/RNNs.jpg`: <br>
     Kalia, Robin (2021) “Recurrent Neural Networks (RNN), Gated Recurrent Units (GRU), and Long Short-Term Memory (LSTM).”
