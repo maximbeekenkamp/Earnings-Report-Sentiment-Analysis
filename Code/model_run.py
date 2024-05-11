@@ -41,8 +41,8 @@ class Runner:
                 pres_test, qa_test = self.corpus.split_pres_qa(test)
                 # pres_train format: [Report#(0-15)[Para[Word]]]
                 # qa_train format: [Report#(0-15)[(Ques[Word], Ans[Word])]]
-                # wordfreq = WordFreq(pres_train, qa_train)
-                # wordfreq.count_words(company)
+                wordfreq = WordFreq(pres_train, qa_train)
+                wordfreq.count_words(company)
 
                 embeddings = Embeddings(
                     self.corpus,
@@ -97,8 +97,8 @@ class Runner:
             pres_test, qa_test = self.corpus.split_pres_qa(test)
             # pres_train format: [Report#(0-15)[Para[Word]]]
             # qa_train format: [Report#(0-15)[(Ques[Word], Ans[Word])]]
-            # wordfreq = WordFreq(pres_train, qa_train)
-            # wordfreq.count_words(company)
+            wordfreq = WordFreq(pres_train, qa_train)
+            wordfreq.count_words(company)
 
             embeddings = Embeddings(
                 self.corpus,

@@ -103,7 +103,7 @@ class MyLSTM(tf.keras.layers.Layer):
             outputs.append(ht)
 
         outputs = tf.stack(outputs, axis=1)
-        
+
         # choosing to only return the entire sequence, not the final hidden state and cell state
         return outputs  # , ht, ct
 
