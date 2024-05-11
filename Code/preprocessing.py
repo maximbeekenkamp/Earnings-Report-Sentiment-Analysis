@@ -51,6 +51,7 @@ class DataSet:
                 continue
             if folder == ".DS_Store":
                 continue
+            micronBool = True
             for file in os.listdir(self.directory + folder):
                 if file.endswith(".txt"):
                     assert (
@@ -59,6 +60,14 @@ class DataSet:
                     year = file.split("-")[0]
                     month = file.split("-")[1]
                     quarter = self.month_to_quarter[month]
+
+                    # special case for MU 2016, Micron has reports on 2016-10-04
+                    # and 2016-12-21 both are counted as Q4. As the 2016-12-21
+                    # report is read first, the quarter is set to 3 for the 2016-10-04
+                    if folder == "MU" and year == "2016" and micronBool:
+                        micronBool = False
+                    if folder == "MU" and year == "2016" and not micronBool:
+                        quarter = 3
 
                     with open(self.directory + folder + "/" + file, "r") as f:
                         data = f.read()
