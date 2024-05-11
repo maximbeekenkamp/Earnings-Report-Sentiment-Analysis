@@ -465,7 +465,7 @@ The plateauing of performance observed with transformer embeddings alongside the
 Overall, the results highlight the importance of selecting appropriate text embedding methods for analysing earnings call transcripts. Future research could explore the integration of pre-trained models and transitioning the focus towards sentiment analysis and disparity. Given the promising results hinted at by the current state of the project there is reason to believe that by leveraging advanced text embedding techniques, researchers can gain deeper insights into the dynamics of corporate communications and investor relations, ultimately contributing to more informed decision-making processes in financial markets.
 
 ## Looking Forward
-Beyond the scope of this project, there are a number of ways in which this project could be expanded. Here are some of ideas that I already have are:
+Although still unfinished, with the sentiment analysis and disparity analysis still in development, there are a number of ways in which this project could be expanded. Here are some of ideas that I already have are:
 
 ### Contrastive Loss
 By integrating the similarity calculations into the loss function, we can explicitly train the model to maximise the similarity between the presentation and Q&A sections. Specifically, to maximise the similarity between a question and the section of the presentation that is most similar to that question. This would likely lead to more accurate embeddings without impacting the performance of the similarity calculations, which are calculated between the answer and the aforementioned section of the presentation.
