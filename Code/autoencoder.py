@@ -111,7 +111,6 @@ class VAE(tf.keras.Model):
             dict: A dictionary containing the output metrics and losses
             of the batch step.
         """
-        # TODO: currently rec and kld are outputting NaNs
         x = data
         with tf.GradientTape() as tape:
             y_pred = self.call(x)
