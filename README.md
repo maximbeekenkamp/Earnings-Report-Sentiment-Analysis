@@ -121,7 +121,7 @@ All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/
 | NVIDIA   | 13,775         | 10.92                   | 323.24                     |
 
 > [!NOTE]
-> The data was collected from the respective company's 2020 annual reports. This is intended to provide a brief overview of the companies and their financial standing, and to provide context for the analysis of the earnings call transcripts.
+> The data was collected from the respective company's 2020 annual reports. If market cap exceeds $1 Trillion no decimal places are provided. This is intended to provide a brief overview of the companies and their financial standing, and to provide context for the analysis of the earnings call transcripts.
 
 In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. See table on dataset size below for the number of tokens in each report after data cleaning. Every report has between 1000 and 5000 tokens, with an average 3102. The data set is largely complete, however, as noted in that table, Micron is missing reports Q2 2018 and Q3 2020.
 
