@@ -104,7 +104,46 @@ To exit the program at any time, you can simply type `:exit` inside the REPL.
 
 ## Data Sources and Descriptions
 
-All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) [^1], as the data. The data is 160 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. In order to work with the data, the data is split into the aforementioned two sections, presentation and Q&A, however the data is then further split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated from each other. The paragraphs are intended to approximate the segmentation of the presentation into unique concepts or ideas.
+All data is downloaded from a [kaggle data set](https://www.kaggle.com/datasets/ashwinm500/earnings-call-transcripts/data) [^1], as the data. The data is collected from the earnings calls of 10 NASDAQ companies from 2016-2020, see the table below for more information. The data is 148 .txt files, one for each earnings call. Each file contains the prepared Presentation and the unprepared Q&A section of the earnings call for a specific company. 
+
+**Descriptive Summary of the 10 Companies:**
+| Company  | Employee Count | Revenue (Billions of $) | Market Cap (Billions of $) |
+|----------|----------------|-------------------------|----------------------------|
+| Apple    | 147,000        | 294.13                  | 2,255                      |
+| AMD      | 12,600         | 9.76                    | 110.42                     |
+| Amazon   | 1,298,000      | 386.06                  | 1,634                      |
+| ASML     | 26,614         | 15.97                   | 205.12                     |
+| Cisco    | 77,500         | 49.30                   | 189.09                     |
+| Google   | 135,301        | 181.69                  | 1,185                      |
+| Intel    | 110,600        | 20.00                   | 204.16                     |
+| Microsoft| 163,000        | 143.00                  | 1,681                      |
+| Micron   | 40,000         | 21.44                   | 83.96                      |
+| NVIDIA   | 13,775         | 10.92                   | 323.24                     |
+
+> [!NOTE]
+> The data was collected from the respective company's 2020 annual reports. The data is intended to provide a brief overview of the companies and their financial standing, and to provide context for the analysis of the earnings call transcripts.
+
+In [`preprocessing.py`](Code/preprocessing.py) the data is cleaned, tokenised, lemmatised, and split into training and testing data with a 80-20 split. This works out to be training on 2016-2019 data with the 2020 data being used for testing. See table on dataset size below for the number of tokens in each report after data cleaning. Every report has between 1000 and 5000 tokens, with an average 3102. The data set is largely complete, however, as noted in that table, Micron is missing reports Q2 2018 and Q3 2020.
+
+
+**Brief Overview of the Dataset Size:** 
+| Company   | 2016 Q1 | 2016 Q2 | 2016 Q3 | 2016 Q4 | 2017 Q1 | 2017 Q2 | 2017 Q3 | 2017 Q4 | 2018 Q1 | 2018 Q2 | 2018 Q3 | 2018 Q4 | 2019 Q1 | 2019 Q2 | 2019 Q3 | 2019 Q4 | 2020 Q1 | 2020 Q2 | 2020 Q3 | **Average** |
+|-----------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|
+| Apple     | 3259    | 3502    | 3149    | 3247    | 3168    | 2808    | 2708    | 2888    | 2715    | 2584    | 3702    | 3648    | 3512    | 3474    | 3630    | 3161    | 3006    | 2882    | 3056    | **3163**    |
+| AMD       | 2995    | 2599    | 2546    | 2532    | 2352    | 2650    | 2967    | 2556    | 3037    | 2908    | 2938    | 2945    | 3085    | 2611    | 2640    | 2635    | 3207    | 3171    | 2773    | **2797**    |
+| Amazon    | 2715    | 2639    | 2129    | 1147    | 2270    | 1796    | 1064    | 1400    | 1555    | 1340    | 1569    | 1587    | 1604    | 1412    | 1553    | 1191    | 1433    | 2082    | 2529    | **1738**    |
+| ASML      | 2907    | 3039    | 3059    | 2883    | 2974    | 2764    | 2845    | 3106    | 3159    | 3151    | 2692    | 3260    | 3205    | 3035    | 2605    | 3052    | 3447    | 3207    | 2962    | **3019**    |
+| Cisco     | 2772    | 2774    | 3067    | 2749    | 2866    | 2760    | 3705    | 2744    | 2801    | 2394    | 3016    | 3118    | 2609    | 2932    | 2619    | 2451    | 2749    | 2866    | 3113    | **2848**    |
+| Google    | 4352    | 4323    | 3866    | 3810    | 3694    | 3417    | 3036    | 3303    | 3403    | 3840    | 3747    | 3391    | 3461    | 3405    | 3744    | 3107    | 3651    | 3697    | 3261    | **3606**    |
+| Intel     | 2586    | 3268    | 2704    | 2908    | 3090    | 2714    | 3350    | 3393    | 3721    | 3067    | 3211    | 3156    | 3058    | 2780    | 3303    | 2982    | 3163    | 3375    | 3447    | **3120**    |
+| Microsoft | 3987    | 4254    | 4418    | 3728    | 4359    | 4315    | 3656    | 3960    | 3865    | 4425    | 3499    | 3524    | 4034    | 3824    | 3801    | 3526    | 3797    | 4199    | 4178    | **3966**    |
+| Micron    | 3452    | 3452    | 3341    | 3456    | 3009    | 3724    | 3392    | 3391    | 3092    | -       | 3944    | 3596    | 3657    | 3456    | 3719    | 3625    | 3576    | 3173    | -       | **3474**   |
+| NVIDIA    | 3838    | 3225    | 4058    | 2857    | 3023    | 2661    | 3173    | 2632    | 3461    | 3307    | 3486    | 3457    | 3200    | 3099    | 2898    | 2972    | 2812    | 4707    | 3631    | **3289**    |
+
+>[!NOTE]
+> The Micron data is incomplete. Averages are shown to the nearest whole number.
+
+To work with the data, presentations and Q&As were then split into paragraphs for the presentation, and for the Q&A the questions and answers are isolated from each other. The paragraphs are intended to approximate the segmentation of the presentation into unique concepts or ideas.
 
 ## Method
 
@@ -418,7 +457,7 @@ The table below displays the cosine similarity scores obtained using the three d
 | **Average**                       | **0.00373**          | **0.213**          | **0.204**          | **0.264**              |
 | **Normalised Standard Deviation** | **0.352**            | **0.0798**         | **0.0805**         | **0.107**              |
 
-The most striking component of this table is the substantial jump in score from the classical to the learned embeddings. TF-IDF embeddings (below) consistently showcase lower similarity scores across all companies. This observation suggests that while TF-IDF embeddings provide useful insights for large corpora, and provide a useful fundamental representation of textual data, they struggle to capture the nuanced semantic relationships present within earnings call transcripts. What this means is that these embeddings aren't representative of the answer-paragraph pair. When looking at the normalised standard deviation, we see that TF-IDF embeddings have standard deviations 3 to 4.5 times greater than the learned embeddings.
+In the barchart on TF-IDF embeddings consistently showcase lower similarity scores across all companies. This observation suggests that while TF-IDF embeddings provide useful insights for large corpora, and provide a useful fundamental representation of textual data, they struggle to capture the nuanced semantic relationships present within earnings call transcripts. What this means is that these embeddings aren't representative of the answer-paragraph pair. When looking at the normalised standard deviation, we see that TF-IDF embeddings have standard deviations 3 to 4.5 times greater than the learned embeddings.
 
 <p align="center">
     <img src="Data/Images/TFIDF_barchart.png" alt="TF-IDF Scores Bar Chart" style="max-width: 90%;"/>
@@ -434,7 +473,7 @@ On the other hand, all of the learned embeddings performed exceptionally well wi
     <em> Cosine Similarity Scores for GRU Embeddings, error bars represent the minimum and maximum scores.</em>
 </p>
 
-The improvements shown in the GRU embeddings are replicated improved upon by the LSTM embeddings:
+Looking at the LSTM bar chart below, the improvements shown in the GRU embeddings are replicated improved upon by the LSTM embeddings:
 
 <p align="center">
     <img src="Data/Images/LSTM_barchart.png" alt="LSTM Scores Bar Chart" style="max-width: 90%;"/>
